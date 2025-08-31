@@ -1,5 +1,4 @@
-use crate::RawPiece;
-
+use super::raw::RawPiece;
 use super::Piece;
 use super::Place;
 use super::Player;
@@ -101,7 +100,7 @@ impl Pattern {
         ]),
     ];
     
-    pub fn from_raw(raw_subboard: [RawPiece; 9]) -> Self {
+    pub(super) fn from_raw(raw_subboard: [RawPiece; 9]) -> Self {
         Pattern(raw_subboard.map(|raw_piece| {
             match raw_piece {
                 RawPiece::Cross => Piece::Cross,
@@ -124,15 +123,23 @@ impl Pattern {
     }
     
     pub fn state(&self) -> SubboardState {
-        if Pattern::WINNING_PATTERNS_CROSS.iter().any(|pattern| {
-            self.contains(*pattern)
-        }) {
+        let cross_won = Pattern::WINNING_PATTERNS_CROSS
+            .iter()
+            .any(|pattern| {
+                self.contains(*pattern)
+            });
+
+        if cross_won {
             return SubboardState::Won(Player::Cross);
         }
 
-        if Pattern::WINNING_PATTERNS_DOT.iter().any(|pattern| {
-            self.contains(*pattern)
-        }) {
+        let dot_won = Pattern::WINNING_PATTERNS_DOT
+            .iter()
+            .any(|pattern| {
+                self.contains(*pattern)
+            });
+
+        if dot_won {
             return SubboardState::Won(Player::Dot);
         }
 

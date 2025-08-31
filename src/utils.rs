@@ -1,8 +1,12 @@
 pub mod pattern;
 
+mod raw;
+
+pub use crate::utils::raw::{RawBoardState, RawMove};
+
 use self::pattern::{Pattern, SubboardState};
 
-use crate::{RawActiveSubBoard, RawBoardState, RawPlace, RawTurn};
+use crate::utils::raw::{RawActiveSubBoard, RawPlace, RawTurn};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Piece {
