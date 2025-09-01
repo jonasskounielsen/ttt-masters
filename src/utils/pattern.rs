@@ -110,6 +110,10 @@ impl Pattern {
         }))
     }
 
+    pub fn piece(&mut self, place: Place) -> &mut Piece {
+        &mut self.0[place.to_index()]
+    }
+
     pub fn contains(&self, pattern: Pattern) -> bool {
         for i in 0..8 {
             let piece = self.0[i];

@@ -29,7 +29,7 @@ pub enum Place {
 }
 
 impl Place {
-    pub fn from_index(index: usize) -> Self {
+    fn from_index(index: usize) -> Self {
         match index {
             0 => Self::TopLeft,
             1 => Self::TopMid,
@@ -41,6 +41,20 @@ impl Place {
             7 => Self::BotMid,
             8 => Self::BotRight,
             _ => panic!("invalid place"),
+        }
+    }
+
+    fn to_index(&self) -> usize {
+        match *self {
+            Self::TopLeft  => 0,
+            Self::TopMid   => 1,
+            Self::TopRight => 2,
+            Self::MidLeft  => 3,
+            Self::MidMid   => 4,
+            Self::MidRight => 5,
+            Self::BotLeft  => 6,
+            Self::BotMid   => 7,
+            Self::BotRight => 8,
         }
     }
 
@@ -59,16 +73,19 @@ impl Place {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Spot {
     pub subboard: Place,
     pub square:   Place,
 }
 
+#[derive(Clone, Copy)]
 pub enum Player {
     Cross,
     Dot,
 }
 
+#[derive(Clone, Copy)]
 pub enum Subboard {
     Won(Player),
     Active  (Pattern),
@@ -85,6 +102,7 @@ impl Subboard {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct BoardState {
     board: [Subboard; 9],
     turn: Player,
@@ -119,8 +137,42 @@ impl BoardState {
             },
         }
     }
+    
+    pub fn subboard(&mut self, subboard: Place) -> Subboard {
+        self.board[subboard.to_index()]
+    } 
+    
+    pub fn do_move(&self, move_: Move) -> Self {
+        let mut new_board = self.clone();
+        let subboard = new_board.subboard(move_.subboard());
+        
+        let mut pattern = match subboard {
+            Subboard::Won(_)      => panic!("invalid move; subboard is won"),
+            Subboard::Inactive(_) => panic!("invalid move; subboard is inactive"),
+            Subboard::Active(pattern) => pattern,
+        };
+        
+        let piece = pattern.piece(move_.square());
 
-    pub fn eligible_spots(&self) -> Box<[Spot]> {
+        let new_piece = match self.turn {
+            Player::Cross => Piece::Cross,
+            Player::Dot   => Piece::Dot,
+        };
+                
+        match *piece {
+            Piece::Cross => panic!("invalid move; square is non-empty"),
+            Piece::Dot   => panic!("invalid move; square is non-empty"),
+            Piece::Empty => {
+                *piece = new_piece;
+            },
+        };
+
+        new_board.subboard(move_.subboard()) = Subboard::from_pattern(pattern, active)
+
+        new_board
+    }
+
+    pub fn eligible_moves(&self) -> Box<[Move]> {
         self.board.iter()
             .enumerate()
             .map(|(subboard_index, subboard)| {
@@ -138,6 +190,35 @@ impl BoardState {
                 }
             })
             .flatten()
+            .map(|spot| Move::new(spot))
             .collect()
+    }
+
+    pub fn is_winning(&self, move_: Move) -> bool {
+        let new_state = self.do_move(move_);
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct Move(Spot);
+
+impl Move {
+    pub fn new(spot: Spot) -> Self {
+        Self(spot)
+    }
+
+    pub fn to_raw(&self) -> RawMove {
+        RawMove {
+            subboard: self.0.subboard.to_raw(),
+            spot: self.0.square.to_raw()
+        }
+    }
+
+    pub fn subboard(&self) -> Place {
+        self.0.subboard
+    }
+
+    pub fn square(&self) -> Place {
+        self.0.square
     }
 }
