@@ -99,6 +99,10 @@ impl Pattern {
             Dot,   Empty, Empty,
         ]),
     ];
+
+    pub fn new(pieces: [Piece; 9]) -> Self {
+        Self(pieces)
+    }
     
     pub(super) fn from_raw(raw_subboard: [RawPiece; 9]) -> Self {
         Pattern(raw_subboard.map(|raw_piece| {
