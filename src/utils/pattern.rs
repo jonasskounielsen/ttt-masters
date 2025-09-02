@@ -6,7 +6,8 @@ use super::Player;
 #[derive(Clone, Copy)]
 pub struct Pattern([Piece; 9]);
 
-pub enum SubboardState {
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum PatternState {
     Won(Player),
     Undecided,
 }
@@ -130,7 +131,7 @@ impl Pattern {
         true
     }
     
-    pub fn state(&self) -> SubboardState {
+    pub fn state(&self) -> PatternState {
         let cross_won = Pattern::WINNING_PATTERNS_CROSS
             .iter()
             .any(|pattern| {
@@ -138,7 +139,7 @@ impl Pattern {
             });
 
         if cross_won {
-            return SubboardState::Won(Player::Cross);
+            return PatternState::Won(Player::Cross);
         }
 
         let dot_won = Pattern::WINNING_PATTERNS_DOT
@@ -148,10 +149,10 @@ impl Pattern {
             });
 
         if dot_won {
-            return SubboardState::Won(Player::Dot);
+            return PatternState::Won(Player::Dot);
         }
 
-        return SubboardState::Undecided;
+        return PatternState::Undecided;
     }
 
     pub fn free_spots(&self) -> Box<[Place]> {
