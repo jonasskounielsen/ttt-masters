@@ -2,6 +2,8 @@ pub mod pattern;
 
 pub mod board_state;
 
+pub mod debug;
+
 mod raw;
 
 pub use crate::utils::raw::{RawBoardState, RawMove};
@@ -81,7 +83,7 @@ pub struct Spot {
     pub square:   Place,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Player {
     Cross,
     Dot,

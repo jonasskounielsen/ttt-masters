@@ -39,9 +39,13 @@ impl BoardState {
         self.turn
     }
     
-    pub fn subboard(&mut self, subboard: Place) -> Subboard {
+    pub fn subboard(&self, subboard: Place) -> Subboard {
         self.board[subboard.to_index()]
-    } 
+    }
+
+    pub fn subboard_mut(&mut self, subboard: Place) -> Subboard {
+        self.board[subboard.to_index()]
+    }
 
     pub fn subboard_pattern(&self) -> Pattern {
         let pieces = self.board.map(|subboard| {
@@ -65,7 +69,7 @@ impl BoardState {
             Subboard::Active(pattern) => pattern,
         };
         
-        let piece: &mut Piece = pattern.piece(move_.square());
+        let piece: &mut Piece = pattern.piece_mut(move_.square());
 
         let new_piece = self.turn.to_piece();
                 

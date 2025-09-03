@@ -10,15 +10,16 @@ use crate::utils::{board_state::BoardState, pattern::PatternState, Move};
 
 pub fn greedy(board_state: BoardState) -> Move {
     let possible_moves = board_state.eligible_moves();
+    
+    let first_winning_move = possible_moves.iter().find(|move_| {
+        board_state.do_move(**move_).state() == PatternState::Won(board_state.turn())
+    });
 
-    if let Some(winning_move) = possible_moves.iter().find(|move_| {
-        board_state.do_move(**move_).state() == board_state.turn()
-    }
-    ) {
+    if let Some(winning_move) = first_winning_move {
         return *winning_move;
     }
     
-    let 
+    // let subboard_winnign_moves = possible_moves. 
 
     possible_moves[0]
 }
