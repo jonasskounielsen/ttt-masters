@@ -1,10 +1,8 @@
-#![crate_type = "cdylib"]
-
 use utils::{board_state::BoardState, RawBoardState, RawMove};
 
-mod utils;
+pub mod utils;
 
-mod algorithms {
+pub mod algorithms {
     pub mod greedy;
 }
 

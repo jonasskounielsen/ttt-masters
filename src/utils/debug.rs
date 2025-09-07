@@ -47,13 +47,13 @@ impl BoardState {
             .collect();
 
         for i in 0..9 {
+            eprint!("{}", active_subboards[i]);
+
             if i % 3 == 0 {
                 eprint!("\n");
             } else {
                 eprint!(" ");
             }
-
-            eprint!("{}", active_subboards[i]);
         }
         
         let mut rows = vec![vec![String::from(" "); 9]; 9];

@@ -1,5 +1,6 @@
 set -e
-rustc ./src/lib.rs -o ./rustbot.so --edition 2024
+cargo build
+cp ./target/debug/librustbot.so ./rustbot.so
 g++ ./interface/interface.cpp -fPIC -shared -o ./"AI's"/bot/libbot.so
 unlink ./CROSS
 unlink ./DOT
