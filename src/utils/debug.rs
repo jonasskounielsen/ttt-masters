@@ -49,7 +49,7 @@ impl BoardState {
         for i in 0..9 {
             eprint!("{}", active_subboards[i]);
 
-            if i % 3 == 0 {
+            if i % 3 == 2 {
                 eprint!("\n");
             } else {
                 eprint!(" ");
@@ -129,8 +129,8 @@ impl Player {
 impl RawTurn {
     pub fn dbg_from_character(character: &str) -> Self {
         match character {
-            "X" => RawTurn::Cross,
-            "O" => RawTurn::Dot,
+            "cross" => RawTurn::Cross,
+            "dot" => RawTurn::Dot,
             _ => panic!("invalid turn"),
         }
     }
