@@ -19,7 +19,7 @@ pub enum Piece {
     Dot,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Place {
     TopLeft,
     TopMid,
@@ -77,7 +77,7 @@ impl Place {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Spot {
     pub subboard: Place,
     pub square:   Place,
@@ -130,7 +130,7 @@ impl Subboard {
 }
 
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Move(Spot);
 
 impl Move {

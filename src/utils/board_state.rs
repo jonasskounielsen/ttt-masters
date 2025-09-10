@@ -57,6 +57,15 @@ impl BoardState {
 
         Pattern::new(pieces)
     }
+
+    pub fn enumerate(&self) -> EnumerateBoard {
+        self.board.iter()
+            .enumerate()
+            .map(|(subboard_index, subboard)|
+                (Place::from_index(subboard_index), subboard)
+            )
+            .collect()
+    }
     
     pub fn do_move(&self, move_: Move) -> Self {
         let mut new_subboards = self.clone().board;
@@ -110,8 +119,7 @@ impl BoardState {
     }
 
     pub fn eligible_moves(&self) -> Box<[Move]> {
-        self.board.iter()
-            .enumerate()
+        self.enumerate()
             .map(|(subboard_index, subboard)| {
                 match *subboard {
                     Subboard::Won(_) => Box::new([]),
@@ -137,3 +145,4 @@ impl BoardState {
         subboard_pattern.state()
     }
 }
+

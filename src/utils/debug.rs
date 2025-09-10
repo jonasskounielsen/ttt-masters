@@ -4,14 +4,17 @@ use super::{board_state::BoardState, pattern::Pattern, raw::{RawActiveSubBoard, 
 
 impl BoardState {
     pub fn dbg_from_matrix(
-        matrix: [[&str; 9]; 9], active_subboard: i32, turn: &str,
+        matrix: [&str; 9], active_subboard: i32, turn: &str,
     ) -> Self {
         let board = matrix
             .iter()
             .map(|row| {
-                row.iter().map(|character|
-                    RawPiece::dbg_from_character(character)
-                )
+                row
+                    .chars()
+                    .step_by(2)
+                    .map(|character|
+                        RawPiece::dbg_from_character(&character.to_string())
+                    )
                     .collect::<Vec<RawPiece>>()
                     .try_into()
                     .unwrap()
@@ -160,7 +163,7 @@ impl RawPiece {
             "X" => RawPiece::Cross,
             "O" => RawPiece::Dot,
             " " => RawPiece::Empty,
-            _ => panic!("invalid turn"),
+            _ => panic!("invalid piece"),
         }
     }
 }
