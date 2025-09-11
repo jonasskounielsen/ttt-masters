@@ -1,3 +1,5 @@
+use std::iter::Enumerate;
+
 use super::raw::RawPiece;
 use super::Piece;
 use super::Place;
@@ -123,17 +125,21 @@ impl Pattern {
         &mut self.0[place.to_index()]
     }
 
+    pub fn enumerate(&self) -> EnumeratePattern {
+        EnumeratePattern::new(
+            self.0.iter().enumerate()
+        )
+    }
 
     pub fn contains(&self, pattern: Pattern) -> bool {
-        for i in 0..8 {
-            let piece = self.0[i];
-            match pattern.0[i] {
-                Cross if piece != Cross => return false,
-                Dot   if piece != Dot   => return false,
-                _ => (),
-            }
-        }
-        true
+        self.enumerate()
+            .all(|(place, piece)|
+                match *pattern.piece(place) {
+                    Cross if *piece != Cross => false,
+                    Dot   if *piece != Dot   => false,
+                    _ => true,
+                }
+            )
     }
     
     pub fn state(&self) -> PatternState {
@@ -157,16 +163,37 @@ impl Pattern {
             return PatternState::Won(Player::Dot);
         }
 
-        return PatternState::Undecided;
+        PatternState::Undecided
     }
 
     pub fn free_spots(&self) -> Box<[Place]> {
-        self.0.iter()
-            .enumerate()
+        self.enumerate()
             .filter(|(_, piece)| matches!(piece, Empty))
-            .map(|(index, _)| {
-                Place::from_index(index)
-            })
+            .map(|(place, _)| place)
             .collect()
+    }
+}
+
+pub struct EnumeratePattern<'a> {
+    iter: Enumerate<std::slice::Iter<'a, Piece>>,
+}
+
+impl<'a> EnumeratePattern<'a> {
+    fn new(iter: Enumerate<std::slice::Iter<'a, Piece>>) -> Self {
+        Self {
+            iter,
+        }
+    }
+}
+
+impl<'a> Iterator for EnumeratePattern<'a> {
+    type Item = (Place, &'a Piece);
+    
+    fn next(&mut self) -> Option<Self::Item> {
+        let inner_next = self.iter.next();
+
+        inner_next.map(|inner_next|
+            (Place::from_index(inner_next.0), inner_next.1)
+        )
     }
 }

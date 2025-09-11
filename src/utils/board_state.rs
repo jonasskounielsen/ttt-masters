@@ -1,3 +1,5 @@
+use std::iter::Enumerate;
+
 use crate::utils::pattern::PatternState;
 
 use super::{pattern::Pattern, raw::RawActiveSubBoard, Move, Piece, Place, Player, RawBoardState, Spot, Subboard};
@@ -59,12 +61,10 @@ impl BoardState {
     }
 
     pub fn enumerate(&self) -> EnumerateBoard {
-        self.board.iter()
+        EnumerateBoard::new(
+            self.board.iter()
             .enumerate()
-            .map(|(subboard_index, subboard)|
-                (Place::from_index(subboard_index), subboard)
-            )
-            .collect()
+        )
     }
     
     pub fn do_move(&self, move_: Move) -> Self {
@@ -120,14 +120,14 @@ impl BoardState {
 
     pub fn eligible_moves(&self) -> Box<[Move]> {
         self.enumerate()
-            .map(|(subboard_index, subboard)| {
+            .map(|(subboard_place, subboard)| {
                 match *subboard {
                     Subboard::Won(_) => Box::new([]),
                     Subboard::Inactive(_) => Box::new([]),
                     Subboard::Active(pattern) => {
                         pattern.free_spots().iter()
                             .map(|place| Spot {
-                                subboard: Place::from_index(subboard_index),
+                                subboard: subboard_place,
                                 square: *place,
                             })
                             .collect::<Box<[Spot]>>()
@@ -145,4 +145,3 @@ impl BoardState {
         subboard_pattern.state()
     }
 }
-
