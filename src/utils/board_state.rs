@@ -145,3 +145,27 @@ impl BoardState {
         subboard_pattern.state()
     }
 }
+
+pub struct EnumerateBoard<'a> {
+    iter: Enumerate<std::slice::Iter<'a, Subboard>>,
+}
+
+impl<'a> EnumerateBoard<'a> {
+    fn new(iter: Enumerate<std::slice::Iter<'a, Subboard>>) -> Self {
+        Self {
+            iter,
+        }
+    }
+}
+
+impl<'a> Iterator for EnumerateBoard<'a> {
+    type Item = (Place, &'a Subboard);
+    
+    fn next(&mut self) -> Option<Self::Item> {
+        let inner_next = self.iter.next();
+
+        inner_next.map(|inner_next|
+            (Place::from_index(inner_next.0), inner_next.1)
+        )
+    }
+}
