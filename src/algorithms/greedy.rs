@@ -19,7 +19,10 @@ pub fn greedy(board_state: BoardState) -> Move {
         return *winning_move;
     }
     
-    // let subboard_winnign_moves = possible_moves. 
+    let subboard_winnign_moves = possible_moves.iter().filter(|move_| {
+        let new_board = board_state.do_move(**move_);
+        
+    });
 
     possible_moves[0]
 }
