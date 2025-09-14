@@ -6,6 +6,10 @@ pub mod debug;
 
 mod raw;
 
+use std::marker::PhantomData;
+
+use board_state::BoardState;
+
 pub use crate::utils::raw::{RawBoardState, RawMove};
 
 use self::pattern::{Pattern, PatternState};
@@ -75,6 +79,26 @@ impl Place {
             Self::BotRight => RawPlace::BotRight,
         }
     }
+
+    pub fn centeredness(&self) -> Centeredness {
+        match self {
+            Place::TopLeft  => Centeredness::Corner,
+            Place::TopMid   => Centeredness::Edge,
+            Place::TopRight => Centeredness::Corner,
+            Place::MidLeft  => Centeredness::Edge,
+            Place::MidMid   => Centeredness::Center,
+            Place::MidRight => Centeredness::Edge,
+            Place::BotLeft  => Centeredness::Corner,
+            Place::BotMid   => Centeredness::Edge,
+            Place::BotRight => Centeredness::Corner,
+        }
+    }
+}
+
+pub enum Centeredness {
+    Center,
+    Edge,
+    Corner,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -131,25 +155,31 @@ impl Subboard {
 
 
 #[derive(Debug, Clone, Copy)]
-pub struct Move(Spot);
+pub struct Move<'a> {
+    spot: Spot,
+    context: PhantomData<&'a BoardState>,
+}
 
-impl Move {
+impl<'a> Move<'a> {
     pub fn new(spot: Spot) -> Self {
-        Self(spot)
+        Self {
+            spot,
+            context: PhantomData,
+        }
     }
 
     pub fn to_raw(&self) -> RawMove {
         RawMove {
-            subboard: self.0.subboard.to_raw(),
-            spot: self.0.square.to_raw()
+            subboard: self.spot.subboard.to_raw(),
+            spot: self.spot.square.to_raw()
         }
     }
 
     pub fn subboard(&self) -> Place {
-        self.0.subboard
+        self.spot.subboard
     }
 
     pub fn square(&self) -> Place {
-        self.0.square
+        self.spot.square
     }
 }

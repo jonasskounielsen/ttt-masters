@@ -45,8 +45,11 @@ impl BoardState {
         self.board[subboard.to_index()]
     }
 
-    pub fn subboard_mut(&mut self, subboard: Place) -> Subboard {
-        self.board[subboard.to_index()]
+    pub fn pattern_if_active(&self, subboard: Place) -> Option<Pattern> {
+        match self.subboard(subboard) {
+            Subboard::Active(pattern) => Some(pattern),
+            _ => None,
+        }
     }
 
     pub fn subboard_pattern(&self) -> Pattern {

@@ -172,6 +172,16 @@ impl Pattern {
             .map(|(place, _)| place)
             .collect()
     }
+
+    pub fn wins(&self, square: Place, player: Player) -> bool {
+        let mut new_pattern = self.clone();
+        *new_pattern.piece_mut(square) = player.to_piece();
+        matches!(new_pattern.state(), PatternState::Won(_))
+    }
+
+    pub fn blocks(&self, square: Place, player: Player) -> bool {
+        !self.wins(square, player.opposite())
+    }
 }
 
 pub struct EnumeratePattern<'a> {

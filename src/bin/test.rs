@@ -15,7 +15,7 @@ fn main() {
         ], -1, "dot",
     );
     
-    let move_ = greedy(board_state);
+    let move_ = greedy(&board_state);
 
     eprintln!("{:?}", move_);
 }
