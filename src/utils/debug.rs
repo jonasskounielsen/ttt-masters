@@ -8,16 +8,15 @@ impl BoardState {
     ) -> Self {
         let board = matrix
             .iter()
-            .map(|row| {
-                row
-                    .chars()
-                    .step_by(2)
-                    .map(|character|
-                        RawPiece::dbg_from_character(&character.to_string())
-                    )
-                    .collect::<Vec<RawPiece>>()
-                    .try_into()
-                    .unwrap()
+            .step_by(2)
+            .map(|item| *item)
+            .collect::<Vec<_>>()
+            .join("");
+
+        let board = (0..81)
+            .map(|i| {
+                let character = "O";
+                RawPiece::dbg_from_character(&character.to_string())
             })
             .collect::<Vec<[RawPiece; 9]>>()
             .try_into()
@@ -82,7 +81,7 @@ impl BoardState {
             let row = &rows[i];
             
             if i == 3 || i == 6 {
-                eprintln!("-----+-----+-----");
+                eprintln!("------+------+-----");
             }
 
             for j in 0..9 {
@@ -91,7 +90,7 @@ impl BoardState {
                 eprint!("{}", character);
 
                 if j == 2 || j == 5 {
-                    eprint!("|");
+                    eprint!(" |");
                 } else {
                     eprint!(" ");
                 }

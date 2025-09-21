@@ -84,6 +84,7 @@ fn best_subboard_blocking_move<'a>(board_state: &'a BoardState, eligible_moves: 
 
 fn best_centermost_square_move<'a>(eligible_moves: &Box<[Move<'a>]>) -> Option<Move<'a>> {
     let mut moves = eligible_moves.clone();
+    dbg!(&moves);
 
     moves.sort_by(|move1, move2| {
         cmp_centeredness(move1.square(), move2.square())
@@ -92,6 +93,7 @@ fn best_centermost_square_move<'a>(eligible_moves: &Box<[Move<'a>]>) -> Option<M
     moves.sort_by(|move1, move2| {
         cmp_centeredness(move1.subboard(), move2.subboard())
     });
+    dbg!(&moves);
 
     moves.get(0).map(|move_| *move_)
 }
