@@ -1,24 +1,35 @@
 use crate::utils::{Place, Player, Subboard};
 
-use super::{board_state::BoardState, pattern::Pattern, raw::{RawActiveSubBoard, RawPiece, RawTurn}, Piece, RawBoardState};
+use super::{board_state::BoardState, pattern::Pattern, raw::{RawActiveSubBoard, RawPiece, RawTurn}, Move, Piece, RawBoardState};
 
 impl BoardState {
     pub fn dbg_from_matrix(
         matrix: [&str; 9], active_subboard: i32, turn: &str,
     ) -> Self {
-        let board = matrix
+        let board: String = matrix
             .iter()
-            .step_by(2)
             .map(|item| *item)
             .collect::<Vec<_>>()
-            .join("");
-
-        let board = (0..81)
-            .map(|i| {
-                let character = "O";
-                RawPiece::dbg_from_character(&character.to_string())
+            .join("")
+            .chars()
+            .enumerate()
+            .filter(|(i, _)| (i % 17) % 2 == 0)
+            .map(|(_, item)| item)
+            .collect();
+                 
+        let board = (0..9)
+            .map(|i: usize| {
+                (0..9)
+                    .map(|j: usize| {
+                        let index = (i % 3) * 3 + (i / 3) * 27 + (j % 3) * 9 + (j / 3);
+                        let character = board.get(index..(index + 1)).unwrap();
+                        RawPiece::dbg_from_character(&character.to_string())
+                    })
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
             })
-            .collect::<Vec<[RawPiece; 9]>>()
+            .collect::<Vec<_>>()
             .try_into()
             .unwrap();
         
@@ -81,7 +92,7 @@ impl BoardState {
             let row = &rows[i];
             
             if i == 3 || i == 6 {
-                eprintln!("------+------+-----");
+                eprintln!("------+------+------");
             }
 
             for j in 0..9 {
@@ -165,4 +176,8 @@ impl RawPiece {
             _ => panic!("invalid piece"),
         }
     }
+}
+
+impl<'a> Box<Move<'a>> {
+    pub fn dbg_print()
 }
