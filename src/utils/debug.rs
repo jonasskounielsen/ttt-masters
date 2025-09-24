@@ -114,7 +114,8 @@ impl BoardState {
     fn dbg_add_pattern(pattern: Pattern, rows: &mut Vec<Vec<String>>, subboard_index: usize) {
         for i in 0..3 {
             for j in 0..3 {
-                rows[(subboard_index / 3) * 3 + i][(subboard_index % 3) * 3 + j] = pattern.piece(Place::from_index(i * 3 + j)).dbg_character();
+                rows[(subboard_index / 3) * 3 + i][(subboard_index % 3) * 3 + j] =
+                    pattern.piece(Place::from_index(i * 3 + j)).dbg_character();
             }
         }
     }
@@ -178,6 +179,18 @@ impl RawPiece {
     }
 }
 
-impl<'a> Box<Move<'a>> {
-    pub fn dbg_print()
+impl<'a> dbg_MoveList<'a> for Box<[Move<'a>]> {}
+
+pub trait dbg_MoveList<'a>
+where
+    &'a Self: IntoIterator<Item = &'a Move<'a>>,
+    Self: 'a,
+{
+    fn dbg_print(&'a self) {
+        for (index, move_) in self.into_iter().enumerate() {
+            let subboard = format!("{:?}", move_.subboard());
+            let square   = format!("{:?}", move_.square());
+            eprintln!("{:<2}: subboard: {:<8}, square: {:<8}", index, subboard, square);
+        }
+    }
 }

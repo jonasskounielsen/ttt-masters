@@ -1,4 +1,4 @@
-use crate::utils::{board_state::BoardState, pattern::{self, PatternState}, Centeredness, Move, Place, Subboard};
+use crate::utils::{board_state::BoardState, debug::dbg_MoveList, pattern::PatternState, Centeredness, Move, Place};
 
 // "greedy" chooses, in order of priority:
 // * A move that wins.
@@ -15,7 +15,7 @@ use crate::utils::{board_state::BoardState, pattern::{self, PatternState}, Cente
 
 pub fn greedy(board_state: &BoardState) -> Move {
     let eligible_moves = board_state.eligible_moves();
-    dbg!(&eligible_moves);
+    eligible_moves.dbg_print();
     
     let first_winning_move = eligible_moves.iter().find(|move_| {
         board_state.do_move(**move_).state() == PatternState::Won(board_state.turn())
@@ -84,16 +84,14 @@ fn best_subboard_blocking_move<'a>(board_state: &'a BoardState, eligible_moves: 
 
 fn best_centermost_square_move<'a>(eligible_moves: &Box<[Move<'a>]>) -> Option<Move<'a>> {
     let mut moves = eligible_moves.clone();
-    dbg!(&moves);
 
     moves.sort_by(|move1, move2| {
-        cmp_centeredness(move1.square(), move2.square())
+        cmp_centeredness(move2.square(), move1.square())
     });
 
     moves.sort_by(|move1, move2| {
-        cmp_centeredness(move1.subboard(), move2.subboard())
+        cmp_centeredness(move2.subboard(), move1.subboard())
     });
-    dbg!(&moves);
 
     moves.get(0).map(|move_| *move_)
 }

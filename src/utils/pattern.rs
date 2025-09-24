@@ -180,7 +180,7 @@ impl Pattern {
     }
 
     pub fn blocks(&self, square: Place, player: Player) -> bool {
-        !self.wins(square, player.opposite())
+        self.wins(square, player.opposite())
     }
 }
 
