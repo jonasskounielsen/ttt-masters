@@ -2,6 +2,7 @@ use crate::utils::{board_state::BoardState, debug::dbg_MoveList, pattern::Patter
 
 // "greedy" chooses, in order of priority:
 // * A move that wins.
+// * A move that blocks the enemy from winning.
 // * A move that wins a subboard.
 // * A move that blocks the enemy from winning a subboard.
 // * The move that takes the square with the highest centeredness.
@@ -71,7 +72,7 @@ fn best_subboard_blocking_move<'a>(board_state: &'a BoardState, eligible_moves: 
             let Some(pattern) = board_state.pattern_if_active(move_.subboard()) else {
                 panic!("move points to inactive subboard");
             };
-            pattern.blocks(move_.square(), board_state.turn().opposite())
+            pattern.blocks(move_.square(), board_state.turn())
         })
         .collect();
     

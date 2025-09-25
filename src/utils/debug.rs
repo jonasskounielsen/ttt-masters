@@ -21,7 +21,7 @@ impl BoardState {
             .map(|i: usize| {
                 (0..9)
                     .map(|j: usize| {
-                        let index = (i % 3) * 3 + (i / 3) * 27 + (j % 3) * 9 + (j / 3);
+                        let index = (i % 3) * 3 + (i / 3) * 27 + (j / 3) * 9 + (j % 3);
                         let character = board.get(index..(index + 1)).unwrap();
                         RawPiece::dbg_from_character(&character.to_string())
                     })
