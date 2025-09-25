@@ -19,11 +19,19 @@ pub fn greedy(board_state: &BoardState) -> Move {
     eligible_moves.dbg_print();
     
     let first_winning_move = eligible_moves.iter().find(|move_| {
-        board_state.do_move(**move_).state() == PatternState::Won(board_state.turn())
+        board_state.subboard_pattern().wins(move_.subboard(), board_state.turn())
     });
 
     if let Some(winning_move) = first_winning_move {
         return *winning_move;
+    }
+
+    let first_win_blocking_move = eligible_moves.iter().find(|move_| {
+        board_state.subboard_pattern().blocks(move_.subboard(), board_state.turn())
+    });
+
+    if let Some(blocking_move) = first_win_blocking_move {
+        return *blocking_move;
     }
     
     let best_subboard_winning_move = best_subboard_winning_move(board_state, &eligible_moves);
