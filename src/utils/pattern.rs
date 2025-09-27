@@ -8,7 +8,7 @@ use super::Player;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Pattern([Piece; 9]);
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PatternState {
     Won(Player),
     Undecided,

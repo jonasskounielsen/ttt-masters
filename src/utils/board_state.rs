@@ -4,7 +4,7 @@ use crate::utils::pattern::PatternState;
 
 use super::{pattern::Pattern, raw::RawActiveSubBoard, Move, Piece, Place, Player, RawBoardState, Spot, Subboard};
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BoardState {
     board: [Subboard; 9],
     turn: Player,

@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RawBoardState {
     pub board: [[RawPiece; 9]; 9],
     pub turn: RawTurn,
@@ -9,14 +9,14 @@ pub struct RawBoardState {
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RawMove {
     pub subboard:  RawPlace,
     pub square:    RawPlace,
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(unused)]
 pub enum RawActiveSubBoard {
     All      = -1,   
@@ -32,7 +32,7 @@ pub enum RawActiveSubBoard {
 }
 
 #[repr(C)]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(unused)]
 pub enum RawPlace {
     TopLeft  = 0,
@@ -47,7 +47,7 @@ pub enum RawPlace {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(unused)]
 pub enum RawPiece {
     Cross =  1,
@@ -56,7 +56,7 @@ pub enum RawPiece {
 }
 
 #[repr(C, i32)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(unused)]
 pub enum RawTurn {
     Cross             =  1,

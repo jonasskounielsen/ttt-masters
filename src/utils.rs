@@ -102,7 +102,7 @@ pub enum Centeredness {
     Corner,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Spot {
     pub subboard: Place,
     pub square:   Place,
@@ -155,7 +155,7 @@ impl Subboard {
 }
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Move<'a> {
     spot: Spot,
     context: PhantomData<&'a BoardState>,
