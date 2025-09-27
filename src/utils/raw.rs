@@ -12,7 +12,7 @@ pub struct RawBoardState {
 #[derive(Debug)]
 pub struct RawMove {
     pub subboard:  RawPlace,
-    pub spot:      RawPlace,
+    pub square:    RawPlace,
 }
 
 #[repr(C)]
@@ -32,7 +32,7 @@ pub enum RawActiveSubBoard {
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 #[allow(unused)]
 pub enum RawPlace {
     TopLeft  = 0,

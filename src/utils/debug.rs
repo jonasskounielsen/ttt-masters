@@ -121,6 +121,24 @@ impl BoardState {
     }
 }
 
+impl Pattern {
+    pub fn dbg_from_matrix(matrix: [&str; 3]) -> Self {
+        let inner = matrix
+            .iter()
+            .map(|row| {
+                row
+                    .chars()
+                    .step_by(2)
+                    .map(|char| RawPiece::dbg_from_character(&String::from(char)))
+            })
+            .flatten()
+            .collect::<Vec<_>>()
+            .try_into()
+            .unwrap();
+        Pattern::from_raw(inner)
+    }
+}
+
 impl Piece {
     pub fn dbg_character(&self) -> String {
         String::from(match self {
@@ -128,6 +146,15 @@ impl Piece {
             Piece::Dot   => "O",
             Piece::Empty => " ",
         })
+    }
+
+    pub fn dbg_from_character(char: &str) -> Self {
+        match char {
+            "X" => Piece::Cross,
+            "O" => Piece::Dot,
+            " " => Piece::Empty,
+            _ => panic!("invalid piece"),
+        }
     }
 }
 
@@ -181,6 +208,7 @@ impl RawPiece {
 
 impl<'a> dbg_MoveList<'a> for Box<[Move<'a>]> {}
 
+#[allow(non_camel_case_types)]
 pub trait dbg_MoveList<'a>
 where
     &'a Self: IntoIterator<Item = &'a Move<'a>>,

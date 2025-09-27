@@ -5,7 +5,7 @@ use super::Piece;
 use super::Place;
 use super::Player;
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Pattern([Piece; 9]);
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -107,8 +107,8 @@ impl Pattern {
         Self(pieces)
     }
     
-    pub(super) fn from_raw(raw_subboard: [RawPiece; 9]) -> Self {
-        Pattern(raw_subboard.map(|raw_piece| {
+    pub(super) fn from_raw(raw_pattern: [RawPiece; 9]) -> Self {
+        Pattern(raw_pattern.map(|raw_piece| {
             match raw_piece {
                 RawPiece::Cross => Piece::Cross,
                 RawPiece::Dot   => Piece::Dot,

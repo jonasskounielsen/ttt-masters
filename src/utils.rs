@@ -16,14 +16,14 @@ use self::pattern::{Pattern, PatternState};
 
 use crate::utils::raw::{RawPlace, RawTurn};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Piece {
     Cross,
     Empty,
     Dot,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Place {
     TopLeft,
     TopMid,
@@ -95,6 +95,7 @@ impl Place {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Centeredness {
     Center,
     Edge,
@@ -136,7 +137,7 @@ impl Player {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Subboard {
     Won(Player),
     Active  (Pattern),
@@ -171,7 +172,7 @@ impl<'a> Move<'a> {
     pub fn to_raw(&self) -> RawMove {
         RawMove {
             subboard: self.spot.subboard.to_raw(),
-            spot: self.spot.square.to_raw()
+            square:     self.spot.square.to_raw()
         }
     }
 
@@ -181,5 +182,100 @@ impl<'a> Move<'a> {
 
     pub fn square(&self) -> Place {
         self.spot.square
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    mod place {
+        use std::panic;
+
+        use crate::utils::{Centeredness, Place};
+
+        #[test]
+        fn to_from_index() {
+            for i in 0..9 {
+                assert_eq!(i, Place::from_index(i).to_index());
+            }
+            let unwind = panic::catch_unwind(|| {
+                Place::from_index(9)
+            });
+            assert!(unwind.is_err());
+        }
+
+        #[test]
+        fn to_raw() {
+            for i in 0..9 {
+                let place = Place::from_index(i);
+                assert_eq!(i as i32, place.to_raw() as i32);
+            }
+        }
+
+        #[test]
+        fn centeredness() {
+            for i in 0..9 {
+                let centeredness = match i {
+                    4 => Centeredness::Center,
+                    _ if i % 2 == 0 => Centeredness::Corner,
+                    _ => Centeredness::Edge,
+                };
+                assert_eq!(centeredness, Place::from_index(i).centeredness());
+            }
+        }
+    }
+
+    mod player {
+        use crate::utils::{raw::RawTurn, Piece, Player};
+
+        #[test]
+        fn to_piece_opposite_from_raw() {
+            let player = Player::Cross;
+            assert_eq!(player.to_piece(), Piece::Cross);
+            assert_eq!(player, Player::from_raw(RawTurn::Cross));
+            let opposite = player.opposite();
+            assert_eq!(opposite.to_piece(), Piece::Dot);
+            assert_eq!(player, Player::from_raw(RawTurn::Dot));
+        }
+    }
+
+    mod subboard {
+        use crate::utils::{pattern::Pattern, Player, Subboard};
+
+        #[test]
+        fn from_pattern() {
+            let won_pattern = Pattern::dbg_from_matrix([
+                "X X X",
+                "  O  ",
+                "O   O",
+            ]);
+            let won_subboard = Subboard::from_pattern(won_pattern, true);
+            assert_eq!(Subboard::Won(Player::Cross), won_subboard);
+            let undecided_pattern = Pattern::dbg_from_matrix([
+                "X O  ",
+                "O X  ",
+                "    O",
+            ]);
+            let active_subboard = Subboard::from_pattern(undecided_pattern, true);
+            assert!(matches!(active_subboard, Subboard::Active(_)));
+            let inactive_subboard = Subboard::from_pattern(undecided_pattern, false);
+            assert!(matches!(inactive_subboard, Subboard::Inactive(_)));
+        }
+    }
+
+    mod move_ {
+        use crate::utils::{raw::RawPlace, Move, Place, Spot};
+
+        #[test]
+        fn subboard_square_to_raw() {
+            let move_ = Move::new(Spot {
+                subboard: Place::TopLeft,
+                square:   Place::BotRight,
+            });
+            assert_eq!(move_.subboard(), Place::TopLeft);
+            assert_eq!(move_.square(),   Place::BotRight);
+            let raw_move = move_.to_raw();
+            assert_eq!(raw_move.subboard, RawPlace::TopLeft);
+            assert_eq!(raw_move.square,   RawPlace::BotRight);
+        }
     }
 }

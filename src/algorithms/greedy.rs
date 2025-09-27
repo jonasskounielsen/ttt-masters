@@ -1,4 +1,4 @@
-use crate::utils::{board_state::BoardState, debug::dbg_MoveList, pattern::PatternState, Centeredness, Move, Place};
+use crate::utils::{board_state::BoardState, debug::dbg_MoveList, Centeredness, Move, Place};
 
 // "greedy" chooses, in order of priority:
 // * A move that wins.
