@@ -14,7 +14,7 @@ use crate::utils::{board_state::BoardState, debug::dbg_MoveList, Centeredness, M
 // * The corner of a pattern.
 // * The edge of a pattern.
 
-pub fn greedy(board_state: &BoardState) -> Move {
+pub fn greedy(board_state: &BoardState) -> Move<'_> {
     let eligible_moves = board_state.eligible_moves();
     eligible_moves.dbg_print();
     

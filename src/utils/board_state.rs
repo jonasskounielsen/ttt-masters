@@ -63,7 +63,7 @@ impl BoardState {
         Pattern::new(pieces)
     }
 
-    pub fn enumerate(&self) -> EnumerateBoard {
+    pub fn enumerate(&self) -> EnumerateBoard<'_> {
         EnumerateBoard::new(
             self.board.iter()
             .enumerate()
@@ -121,7 +121,7 @@ impl BoardState {
         new_board
     }
 
-    pub fn eligible_moves(&self) -> Box<[Move]> {
+    pub fn eligible_moves(&self) -> Box<[Move<'_>]> {
         self.enumerate()
             .map(|(subboard_place, subboard)| {
                 match *subboard {
