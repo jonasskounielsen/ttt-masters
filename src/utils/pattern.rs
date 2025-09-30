@@ -210,7 +210,7 @@ impl<'a> Iterator for EnumeratePattern<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::{raw::RawPiece, Piece, Place};
+    use crate::utils::{pattern::PatternState, raw::RawPiece, Piece, Place, Player};
 
     use super::Pattern;
 
@@ -246,5 +246,106 @@ mod tests {
             .map(|(index, piece)| (Place::from_index(index), piece))
             .collect::<Vec<_>>();
         assert_eq!(pattern.enumerate().collect::<Vec<_>>(), enumerated);
+    }
+
+    #[test]
+    fn contains() {
+        let pattern = Pattern::dbg_from_matrix([
+            "X    ",
+            "  X O",
+            "X O O",
+        ]);
+        let contained = Pattern::dbg_from_matrix([
+            "X    ",
+            "  X O",
+            "X O O",
+        ]);
+        assert!(pattern.contains(contained));
+        let also_contained = Pattern::dbg_from_matrix([
+            "X    ",
+            "     ",
+            "  O O",
+        ]);
+        assert!(pattern.contains(also_contained));
+        let also_also_contained = Pattern::dbg_from_matrix([
+            "     ",
+            "     ",
+            "     ",
+        ]);
+        assert!(pattern.contains(also_also_contained));
+        let not_contained = Pattern::dbg_from_matrix([
+            "X   O",
+            "  X  ",
+            "  O  ",
+        ]);
+        assert!(!pattern.contains(not_contained));
+    }
+
+    #[test]
+    fn state() {
+        let won_cross = Pattern::dbg_from_matrix([
+            "X X X",
+            "  O  ",
+            "O   O",
+        ]);
+        assert_eq!(won_cross.state(), PatternState::Won(Player::Cross));
+        let won_dot = Pattern::dbg_from_matrix([
+            "X    ",
+            "O O O",
+            "X   X",
+        ]);
+        assert_eq!(won_dot.state(),   PatternState::Won(Player::Dot));
+        let undecided = Pattern::dbg_from_matrix([
+            "X O X",
+            "X O O",
+            "O X O",
+        ]);
+        assert_eq!(undecided.state(), PatternState::Undecided);
+    }
+
+    #[test]
+    fn free_spots() {
+        let pattern = Pattern::dbg_from_matrix([
+            "X O  ",
+            "  X O",
+            "O   X",
+        ]);
+        let free_spots = [
+            Place::TopRight, Place::MidLeft, Place::BotMid,
+        ];
+        pattern
+            .free_spots()
+            .iter()
+            .enumerate()
+            .for_each(|(index, place)| {
+                assert_eq!(free_spots[index], *place);
+            });
+    }
+
+    #[test]
+    fn wins_blocks() {
+        let winnable_cross = Pattern::dbg_from_matrix([
+            "X   X",
+            "  O  ",
+            "O    ",
+        ]);
+        assert!(winnable_cross.wins  (Place::TopMid, Player::Cross));
+        assert!(winnable_cross.blocks(Place::TopMid, Player::Dot));
+        let winnable_dot = Pattern::dbg_from_matrix([
+            "  X  ",
+            "O   O",
+            "X O X",
+        ]);
+        assert!(winnable_dot.wins  (Place::MidMid, Player::Dot));
+        assert!(winnable_dot.blocks(Place::MidMid, Player::Cross));
+        let winnable_both = Pattern::dbg_from_matrix([
+            "O X O",
+            "O   O",
+            "  X X",
+        ]);
+        assert!(winnable_both.wins  (Place::BotLeft, Player::Dot));
+        assert!(winnable_both.blocks(Place::BotLeft, Player::Cross));
+        assert!(winnable_both.wins  (Place::BotLeft, Player::Cross));
+        assert!(winnable_both.blocks(Place::BotLeft, Player::Dot));
     }
 }
