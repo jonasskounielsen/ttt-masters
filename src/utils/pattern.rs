@@ -125,7 +125,7 @@ impl Pattern {
         &mut self.0[place.to_index()]
     }
 
-    pub fn enumerate(&self) -> EnumeratePattern {
+    pub fn enumerate(&self) -> EnumeratePattern<'_> {
         EnumeratePattern::new(
             self.0.iter().enumerate()
         )
@@ -205,5 +205,46 @@ impl<'a> Iterator for EnumeratePattern<'a> {
         inner_next.map(|inner_next|
             (Place::from_index(inner_next.0), inner_next.1)
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::{raw::RawPiece, Piece, Place};
+
+    use super::Pattern;
+
+    #[test]
+    fn from_raw_piece_piece_mut() {
+        let raw_pattern = [
+            RawPiece::Cross, RawPiece::Dot,   RawPiece::Empty,
+            RawPiece::Empty, RawPiece::Empty, RawPiece::Empty,
+            RawPiece::Empty, RawPiece::Empty, RawPiece::Empty,
+        ];
+        let mut pattern = Pattern::from_raw(raw_pattern);
+        assert_eq!(*pattern.piece    (Place::TopLeft),  Piece::Cross);
+        assert_eq!(*pattern.piece_mut(Place::TopMid),   Piece::Dot);
+        assert_eq!(*pattern.piece    (Place::TopRight), Piece::Empty);
+        assert_eq!(*pattern.piece_mut(Place::MidMid),   Piece::Empty);
+    }
+
+    #[test]
+    fn enumerate() {
+        let pattern = Pattern::dbg_from_matrix([
+            "X    ",
+            "  X O",
+            "X O O",
+        ]);
+        let pattern_data = [
+            Piece::Cross, Piece::Empty, Piece::Empty,
+            Piece::Empty, Piece::Cross, Piece::Dot,
+            Piece::Cross, Piece::Dot,   Piece::Dot,
+        ];
+        let enumerated = pattern_data
+            .iter()
+            .enumerate()
+            .map(|(index, piece)| (Place::from_index(index), piece))
+            .collect::<Vec<_>>();
+        assert_eq!(pattern.enumerate().collect::<Vec<_>>(), enumerated);
     }
 }

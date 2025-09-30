@@ -234,7 +234,7 @@ mod tests {
             assert_eq!(player, Player::from_raw(RawTurn::Cross));
             let opposite = player.opposite();
             assert_eq!(opposite.to_piece(), Piece::Dot);
-            assert_eq!(player, Player::from_raw(RawTurn::Dot));
+            assert_eq!(opposite, Player::from_raw(RawTurn::Dot));
         }
     }
 
