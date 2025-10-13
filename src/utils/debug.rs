@@ -7,9 +7,7 @@ impl BoardState {
         matrix: [&str; 9], active_subboard: i32, turn: &str,
     ) -> Self {
         let board: String = matrix
-            .iter()
-            .map(|item| *item)
-            .collect::<Vec<_>>()
+            .to_vec()
             .join("")
             .chars()
             .enumerate()
@@ -23,7 +21,7 @@ impl BoardState {
                     .map(|j: usize| {
                         let index = (i % 3) * 3 + (i / 3) * 27 + (j / 3) * 9 + (j % 3);
                         let character = board.get(index..(index + 1)).unwrap();
-                        RawPiece::dbg_from_character(&character.to_string())
+                        RawPiece::dbg_from_character(character)
                     })
                     .collect::<Vec<_>>()
                     .try_into()
@@ -34,7 +32,7 @@ impl BoardState {
             .unwrap();
         
         let raw_board_state = RawBoardState {
-            board: board,
+            board,
             active_subboard: RawActiveSubBoard::dbg_from_i32(active_subboard),
             turn: RawTurn::dbg_from_character(turn),
         };
@@ -51,7 +49,6 @@ impl BoardState {
         eprintln!("Turn: {}", turn);
 
         let active_subboards: Vec<_> = (0..9)
-            .into_iter()
             .map(|index| {
                 let subboard = self.subboard(Place::from_index(index));
                 
@@ -59,16 +56,19 @@ impl BoardState {
             })
             .collect();
 
-        for i in 0..9 {
-            eprint!("{}", active_subboards[i]);
+        active_subboards
+            .iter()
+            .enumerate()
+            .for_each(|(i, subboard)| {
+                eprint!("{}", subboard);
 
-            if i % 3 == 2 {
-                eprint!("\n");
-            } else {
-                eprint!(" ");
-            }
-        }
-        
+                if i % 3 == 2 {
+                    eprintln!();
+                } else {
+                    eprint!(" ");
+                }
+        });        
+
         let mut rows = vec![vec![String::from(" "); 9]; 9];
 
         for subboard_index in 0..9 {
@@ -88,30 +88,31 @@ impl BoardState {
             }
         }
         
-        for i in 0..9 {
-            let row = &rows[i];
-            
-            if i == 3 || i == 6 {
-                eprintln!("------+------+------");
-            }
-
-            for j in 0..9 {
-                let character = &row[j];
-
-                eprint!("{}", character);
-
-                if j == 2 || j == 5 {
-                    eprint!(" |");
-                } else {
-                    eprint!(" ");
+        rows
+            .iter()
+            .enumerate()
+            .for_each(|(i, row)| {
+                if i == 3 || i == 6 {
+                    eprintln!("------+------+------");
                 }
-            }
 
-            eprintln!("");
-        }
+                row
+                    .iter()
+                    .enumerate()
+                    .for_each(|(j, character)| {
+                        eprint!("{}", character);
+
+                        if j == 2 || j == 5 {
+                            eprint!(" |");
+                        } else {
+                            eprint!(" ");
+                        }
+                    });
+                    eprintln!();
+            });
     }
 
-    fn dbg_add_pattern(pattern: Pattern, rows: &mut Vec<Vec<String>>, subboard_index: usize) {
+    fn dbg_add_pattern(pattern: Pattern, rows: &mut [Vec<String>], subboard_index: usize) {
         for i in 0..3 {
             for j in 0..3 {
                 rows[(subboard_index / 3) * 3 + i][(subboard_index % 3) * 3 + j] =
@@ -125,13 +126,12 @@ impl Pattern {
     pub fn dbg_from_matrix(matrix: [&str; 3]) -> Self {
         let inner = matrix
             .iter()
-            .map(|row| {
+            .flat_map(|row| {
                 row
                     .chars()
                     .step_by(2)
                     .map(|char| RawPiece::dbg_from_character(&String::from(char)))
             })
-            .flatten()
             .collect::<Vec<_>>()
             .try_into()
             .unwrap();

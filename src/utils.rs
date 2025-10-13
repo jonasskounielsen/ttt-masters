@@ -52,8 +52,8 @@ impl Place {
         }
     }
 
-    fn to_index(&self) -> usize {
-        match *self {
+    fn to_index(self) -> usize {
+        match self {
             Self::TopLeft  => 0,
             Self::TopMid   => 1,
             Self::TopRight => 2,

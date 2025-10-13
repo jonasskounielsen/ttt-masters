@@ -174,7 +174,7 @@ impl Pattern {
     }
 
     pub fn wins(&self, square: Place, player: Player) -> bool {
-        let mut new_pattern = self.clone();
+        let mut new_pattern = *self;
         *new_pattern.piece_mut(square) = player.to_piece();
         matches!(new_pattern.state(), PatternState::Won(_))
     }

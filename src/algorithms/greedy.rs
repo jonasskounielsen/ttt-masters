@@ -55,7 +55,7 @@ pub fn greedy(board_state: &BoardState) -> Move<'_> {
     panic!("no eligible moves");
 }
 
-fn best_subboard_winning_move<'a>(board_state: &'a BoardState, eligible_moves: &Box<[Move<'a>]>) -> Option<Move<'a>> {
+fn best_subboard_winning_move<'a>(board_state: &'a BoardState, eligible_moves: &[Move<'a>]) -> Option<Move<'a>> {
     let mut subboard_winning_moves: Vec<_> = eligible_moves
         .iter()
         .filter(|move_| {
@@ -70,10 +70,10 @@ fn best_subboard_winning_move<'a>(board_state: &'a BoardState, eligible_moves: &
         cmp_centeredness(move1.subboard(), move2.subboard())
     });
     
-    subboard_winning_moves.get(0).map(|move_| **move_)
+    subboard_winning_moves.first().map(|move_| **move_)
 }
 
-fn best_subboard_blocking_move<'a>(board_state: &'a BoardState, eligible_moves: &Box<[Move<'a>]>) -> Option<Move<'a>> {
+fn best_subboard_blocking_move<'a>(board_state: &'a BoardState, eligible_moves: &[Move<'a>]) -> Option<Move<'a>> {
     let mut subboard_winning_moves: Vec<_> = eligible_moves
         .iter()
         .filter(|move_| {
@@ -88,11 +88,11 @@ fn best_subboard_blocking_move<'a>(board_state: &'a BoardState, eligible_moves: 
         cmp_centeredness(move1.subboard(), move2.subboard())
     });
     
-    subboard_winning_moves.get(0).map(|move_| **move_)
+    subboard_winning_moves.first().map(|move_| **move_)
 }
 
-fn best_centermost_square_move<'a>(eligible_moves: &Box<[Move<'a>]>) -> Option<Move<'a>> {
-    let mut moves = eligible_moves.clone();
+fn best_centermost_square_move<'a>(eligible_moves: &[Move<'a>]) -> Option<Move<'a>> {
+    let mut moves: Vec<_> = eligible_moves.into();
 
     moves.sort_by(|move1, move2| {
         cmp_centeredness(move2.square(), move1.square())
@@ -102,7 +102,7 @@ fn best_centermost_square_move<'a>(eligible_moves: &Box<[Move<'a>]>) -> Option<M
         cmp_centeredness(move2.subboard(), move1.subboard())
     });
 
-    moves.get(0).map(|move_| *move_)
+    moves.first().copied()
 }
 
 fn cmp_centeredness(place1: Place, place2: Place) -> std::cmp::Ordering {

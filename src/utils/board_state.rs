@@ -27,12 +27,11 @@ impl BoardState {
                 RawActiveSubBoard::BotMid   => subboard_index == 7,
                 RawActiveSubBoard::BotRight => subboard_index == 8,
             };
-            let subboard = Subboard::from_pattern(pattern, active);
-            subboard
+            Subboard::from_pattern(pattern, active)
         });
         
         BoardState {
-            board: board,
+            board,
             turn: Player::from_raw(raw_board_state.turn),
         }
     }
@@ -71,7 +70,7 @@ impl BoardState {
     }
     
     pub fn do_move(&self, move_: Move) -> Self {
-        let mut new_subboards = self.clone().board;
+        let mut new_subboards = self.board;
         let subboard = &mut new_subboards[move_.subboard().to_index()];
         let pattern = match subboard {
             Subboard::Won(_)      => panic!("invalid move; subboard is won"),
@@ -106,16 +105,15 @@ impl BoardState {
         }
         
         let new_turn = self.turn.opposite();
-        let new_board = BoardState {
+        BoardState {
             board: new_subboards,
             turn: new_turn,
-        };
-        new_board
+        }
     }
 
     pub fn eligible_moves(&self) -> Box<[Move<'_>]> {
         self.enumerate()
-            .map(|(subboard_place, subboard)| {
+            .flat_map(|(subboard_place, subboard)| {
                 match *subboard {
                     Subboard::Won(_) => Box::new([]),
                     Subboard::Inactive(_) => Box::new([]),
@@ -129,8 +127,7 @@ impl BoardState {
                     },
                 }
             })
-            .flatten()
-            .map(|spot| Move::new(spot))
+            .map(Move::new)
             .collect()
     }
 
@@ -225,13 +222,12 @@ mod tests {
         TEST_BOARD.map(|subboard| {
             subboard
                 .iter()
-                .map(|row| {
+                .flat_map(|row| {
                     row
                        .chars()
                        .step_by(2)
                        .collect::<Vec<_>>()
                 })
-                .flatten()
                 .map(|piece| RawPiece::dbg_from_character(&piece.to_string()))
                 .collect::<Vec<_>>()
                 .try_into()
@@ -315,7 +311,7 @@ mod tests {
                 continue;
             }
             let place = Place::from_index(i);
-            assert!(matches!(board_state.pattern_if_active(place), None));
+            assert!(board_state.pattern_if_active(place).is_none());
         }
     }
 
