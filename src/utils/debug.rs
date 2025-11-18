@@ -139,6 +139,16 @@ impl Pattern {
     }
 }
 
+impl<'a> Move<'a> {
+    pub fn dbg_to_string(&self) -> String {
+        format!("Subboard: {:?} square: {:?}", self.subboard(), self.square())
+    }
+    
+    pub fn dbg_print(&self) {
+        eprintln!("{:?}", self.dbg_to_string());
+    }
+}
+
 impl Piece {
     pub fn dbg_character(&self) -> String {
         String::from(match self {
@@ -218,7 +228,7 @@ where
         for (index, move_) in self.into_iter().enumerate() {
             let subboard = format!("{:?}", move_.subboard());
             let square   = format!("{:?}", move_.square());
-            eprintln!("{:<2}: subboard: {:<8}, square: {:<8}", index, subboard, square);
+            eprintln!("{:>2}: subboard: {:<8}, square: {:<8}", index, subboard, square);
         }
     }
 }

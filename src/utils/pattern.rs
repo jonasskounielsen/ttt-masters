@@ -166,9 +166,9 @@ impl Pattern {
         PatternState::Undecided
     }
 
-    pub fn free_spots(&self) -> Box<[Place]> {
+    pub fn spots(&self, piece: Piece) -> Box<[Place]> {
         self.enumerate()
-            .filter(|(_, piece)| matches!(piece, Empty))
+            .filter(|(_, other_piece)| **other_piece == piece)
             .map(|(place, _)| place)
             .collect()
     }
@@ -304,17 +304,40 @@ mod tests {
     }
 
     #[test]
-    fn free_spots() {
+    fn spots() {
         let pattern = Pattern::dbg_from_matrix([
             "X O  ",
             "  X O",
             "O   X",
         ]);
-        let free_spots = [
-            Place::TopRight, Place::MidLeft, Place::BotMid,
+
+        let cross_spots = [
+            Place::TopLeft,  Place::MidMid,   Place::BotRight,
         ];
         pattern
-            .free_spots()
+            .spots(Piece::Cross)
+            .iter()
+            .enumerate()
+            .for_each(|(index, place)| {
+                assert_eq!(cross_spots[index], *place);
+            });
+
+        let dot_spots = [
+            Place::TopMid,   Place::MidRight, Place::BotLeft,
+        ];
+        pattern
+            .spots(Piece::Dot)
+            .iter()
+            .enumerate()
+            .for_each(|(index, place)| {
+                assert_eq!(dot_spots[index], *place);
+            });
+
+        let free_spots = [
+            Place::TopRight, Place::MidLeft,  Place::BotMid,
+        ];
+        pattern
+            .spots(Piece::Empty)
             .iter()
             .enumerate()
             .for_each(|(index, place)| {

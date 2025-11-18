@@ -118,7 +118,7 @@ impl BoardState {
                     Subboard::Won(_) => Box::new([]),
                     Subboard::Inactive(_) => Box::new([]),
                     Subboard::Active(pattern) => {
-                        pattern.free_spots().iter()
+                        pattern.spots(Piece::Empty).iter()
                             .map(|place| Spot {
                                 subboard: subboard_place,
                                 square: *place,

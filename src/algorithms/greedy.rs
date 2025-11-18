@@ -13,11 +13,9 @@ use crate::utils::{board_state::BoardState, debug::dbg_MoveList, Centeredness, M
 // * The center of a pattern.
 // * The corner of a pattern.
 // * The edge of a pattern.
-
 pub fn greedy(board_state: &BoardState) -> Move<'_> {
     let eligible_moves = board_state.eligible_moves();
-    eligible_moves.dbg_print();
-    
+
     let first_winning_move = eligible_moves.iter().find(|move_| {
         board_state.subboard_pattern().wins(move_.subboard(), board_state.turn())
     });
@@ -76,10 +74,7 @@ fn best_subboard_winning_move<'a>(board_state: &'a BoardState, eligible_moves: &
 fn best_subboard_blocking_move<'a>(board_state: &'a BoardState, eligible_moves: &[Move<'a>]) -> Option<Move<'a>> {
     let mut subboard_winning_moves: Vec<_> = eligible_moves
         .iter()
-        .filter(|move_| {
-            let Some(pattern) = board_state.pattern_if_active(move_.subboard()) else {
-                panic!("move points to inactive subboard");
-            };
+        .filter(|move_| { let Some(pattern) = board_state.pattern_if_active(move_.subboard()) else { panic!("move points to inactive subboard"); };
             pattern.blocks(move_.square(), board_state.turn())
         })
         .collect();
