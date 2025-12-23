@@ -1,3 +1,13 @@
+use std::marker::PhantomData;
+
+use board_state::BoardState;
+
+use self::pattern::{Pattern, PatternState};
+
+use crate::utils::raw::{RawPlace, RawTurn};
+
+pub use crate::utils::raw::{RawBoardState, RawMove};
+
 pub mod pattern;
 
 pub mod board_state;
@@ -5,16 +15,6 @@ pub mod board_state;
 pub mod debug;
 
 mod raw;
-
-use std::marker::PhantomData;
-
-use board_state::BoardState;
-
-pub use crate::utils::raw::{RawBoardState, RawMove};
-
-use self::pattern::{Pattern, PatternState};
-
-use crate::utils::raw::{RawPlace, RawTurn};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Piece {
@@ -152,6 +152,13 @@ impl Subboard {
             PatternState::Undecided           => Subboard::Inactive(pattern),
         }
     }
+
+    pub fn pattern_if_active(&self) -> Option<Pattern> {
+        match self {
+            Subboard::Active(pattern) => Some(*pattern),
+            _ => None,
+        }
+    }
 }
 
 
@@ -242,23 +249,30 @@ mod tests {
         use crate::utils::{pattern::Pattern, Player, Subboard};
 
         #[test]
-        fn from_pattern() {
+        fn from_pattern_pattern_if_active() {
             let won_pattern = Pattern::dbg_from_matrix([
                 "X X X",
                 "  O  ",
                 "O   O",
             ]);
+
             let won_subboard = Subboard::from_pattern(won_pattern, true);
             assert_eq!(Subboard::Won(Player::Cross), won_subboard);
+            assert!(won_subboard.pattern_if_active().is_none());
+
             let undecided_pattern = Pattern::dbg_from_matrix([
                 "X O  ",
                 "O X  ",
                 "    O",
             ]);
+
             let active_subboard = Subboard::from_pattern(undecided_pattern, true);
             assert!(matches!(active_subboard, Subboard::Active(_)));
+            assert_eq!(active_subboard.pattern_if_active(), Some(undecided_pattern));
+
             let inactive_subboard = Subboard::from_pattern(undecided_pattern, false);
             assert!(matches!(inactive_subboard, Subboard::Inactive(_)));
+            assert!(inactive_subboard.pattern_if_active().is_none());
         }
     }
 

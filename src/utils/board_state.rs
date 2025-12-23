@@ -45,10 +45,7 @@ impl BoardState {
     }
 
     pub fn pattern_if_active(&self, subboard: Place) -> Option<Pattern> {
-        match self.subboard(subboard) {
-            Subboard::Active(pattern) => Some(pattern),
-            _ => None,
-        }
+        self.subboard(subboard).pattern_if_active()
     }
 
     pub fn subboard_pattern(&self) -> Pattern {
@@ -114,10 +111,8 @@ impl BoardState {
     pub fn eligible_moves(&self) -> Box<[Move<'_>]> {
         self.enumerate()
             .flat_map(|(subboard_place, subboard)| {
-                match *subboard {
-                    Subboard::Won(_) => Box::new([]),
-                    Subboard::Inactive(_) => Box::new([]),
-                    Subboard::Active(pattern) => {
+                match subboard.pattern_if_active() {
+                    Some(pattern) => {
                         pattern.spots(Piece::Empty).iter()
                             .map(|place| Spot {
                                 subboard: subboard_place,
@@ -125,6 +120,7 @@ impl BoardState {
                             })
                             .collect::<Box<[Spot]>>()
                     },
+                    _ => Box::new([]),
                 }
             })
             .map(Move::new)

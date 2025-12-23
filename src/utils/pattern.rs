@@ -182,6 +182,21 @@ impl Pattern {
     pub fn blocks(&self, square: Place, player: Player) -> bool {
         self.wins(square, player.opposite())
     }
+
+    pub fn almost_won_by(&self, player: Player) -> bool {
+        self
+            .spots(Piece::Empty)
+            .iter()
+            .any(|square| self.wins(*square, player))
+    }
+
+    pub fn doubly_almost_won_by(&self, player: Player) -> bool {
+        self
+            .spots(Piece::Empty)
+            .iter()
+            .filter(|square| self.wins(**square, player))
+            .count() >= 2
+    }
 }
 
 pub struct EnumeratePattern<'a> {
@@ -370,5 +385,59 @@ mod tests {
         assert!(winnable_both.blocks(Place::BotLeft, Player::Cross));
         assert!(winnable_both.wins  (Place::BotLeft, Player::Cross));
         assert!(winnable_both.blocks(Place::BotLeft, Player::Dot));
+    }
+    
+    #[test]
+    fn almost_doubly_almost_won_by() {
+        let not_almost_won = Pattern::dbg_from_matrix([
+            "X   O",
+            "O    ",
+            "X O  ",
+        ]);
+        assert!(!not_almost_won.almost_won_by(Player::Cross));
+        assert!(!not_almost_won.almost_won_by(Player::Dot));
+        assert!(!not_almost_won.doubly_almost_won_by(Player::Cross));
+        assert!(!not_almost_won.doubly_almost_won_by(Player::Dot));
+
+        let almost_won_both = Pattern::dbg_from_matrix([
+            "X X O",
+            "    O",
+            "X O  ",
+        ]);
+        assert!( almost_won_both.almost_won_by(Player::Cross));
+        assert!( almost_won_both.almost_won_by(Player::Dot));
+        assert!(!almost_won_both.doubly_almost_won_by(Player::Cross));
+        assert!(!almost_won_both.doubly_almost_won_by(Player::Dot));
+
+        let doubly_almost_won_both = Pattern::dbg_from_matrix([
+            "X X  ",
+            "X   O",
+            "  O O",
+        ]);
+        assert!( doubly_almost_won_both.almost_won_by(Player::Cross));
+        assert!( doubly_almost_won_both.almost_won_by(Player::Dot));
+        assert!( doubly_almost_won_both.doubly_almost_won_by(Player::Cross));
+        assert!( doubly_almost_won_both.doubly_almost_won_by(Player::Dot));
+
+        let doubly_almost_won_cross = Pattern::dbg_from_matrix([
+            "X X  ",
+            "X O O",
+            "  O X",
+        ]);
+        assert!( doubly_almost_won_cross.almost_won_by(Player::Cross));
+        assert!(!doubly_almost_won_cross.almost_won_by(Player::Dot));
+        assert!( doubly_almost_won_cross.doubly_almost_won_by(Player::Cross));
+        assert!(!doubly_almost_won_cross.doubly_almost_won_by(Player::Dot));
+
+        let doubly_almost_won_dot = Pattern::dbg_from_matrix([
+            "X O  ",
+            "O   O",
+            "X O O",
+        ]);
+        assert!(!doubly_almost_won_dot.almost_won_by(Player::Cross));
+        assert!( doubly_almost_won_dot.almost_won_by(Player::Dot));
+        assert!(!doubly_almost_won_dot.doubly_almost_won_by(Player::Cross));
+        assert!( doubly_almost_won_dot.doubly_almost_won_by(Player::Dot));
+
     }
 }

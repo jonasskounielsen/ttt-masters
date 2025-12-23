@@ -3,18 +3,18 @@ use rustbot::{algorithms::{greedy::greedy, minimax::minimax}, utils::board_state
 fn main() {
     let board_state = BoardState::dbg_from_matrix(
         [
-            "     .     .X X X",
-            "  O  .     .X X X",
-            "     .     .X X X",
+            "O O O.X X X.X X X",
+            "O O O.X X X.X X X",
+            "O O O.X X X.X X X",
 
-            "     .X X X.    X",
-            "  X X.X X X.     ",
-            "     .X X X.     ",
+            "X X X.O O O.O O O",
+            "X X X.O O O.O O O",
+            "X X X.O O O.O O O",
             
-            "     .     .     ",
-            "  X X.  O  .  O  ",
-            "     .     .     ",
-        ], -1, "dot",
+            "X X X..X X X",
+            "X X X.O O X.X X X",
+            "X X X.  O X.X X X",
+        ], -1, "cross",
     );
 
     board_state.dbg_print();
