@@ -191,15 +191,15 @@ impl RawActiveSubBoard {
     pub fn dbg_from_i32(number: i32) -> Self {
         match number {
             -1 => RawActiveSubBoard::All,
-             0 => RawActiveSubBoard::TopLeft,
+             0 => RawActiveSubBoard::TopLef,
              1 => RawActiveSubBoard::TopMid,
-             2 => RawActiveSubBoard::TopRight,
-             3 => RawActiveSubBoard::MidLeft,
+             2 => RawActiveSubBoard::TopRig,
+             3 => RawActiveSubBoard::MidLef,
              4 => RawActiveSubBoard::MidMid,
-             5 => RawActiveSubBoard::MidRight,
-             6 => RawActiveSubBoard::BotLeft,
+             5 => RawActiveSubBoard::MidRig,
+             6 => RawActiveSubBoard::BotLef,
              7 => RawActiveSubBoard::BotMid,
-             8 => RawActiveSubBoard::BotRight,
+             8 => RawActiveSubBoard::BotRig,
              _ => panic!("invalid active subboard"),
         }
     }

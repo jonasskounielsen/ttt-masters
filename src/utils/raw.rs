@@ -11,39 +11,39 @@ pub struct RawBoardState {
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RawMove {
-    pub subboard:  RawPlace,
-    pub square:    RawPlace,
+    pub subboard: RawPlace,
+    pub square:   RawPlace,
 }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(unused)]
 pub enum RawActiveSubBoard {
-    All      = -1,   
-    TopLeft  =  0,
-    TopMid   =  1,
-    TopRight =  2,
-    MidLeft  =  3,
-    MidMid   =  4,
-    MidRight =  5,
-    BotLeft  =  6,
-    BotMid   =  7,
-    BotRight =  8,
+    All    = -1,   
+    TopLef =  0,
+    TopMid =  1,
+    TopRig =  2,
+    MidLef =  3,
+    MidMid =  4,
+    MidRig =  5,
+    BotLef =  6,
+    BotMid =  7,
+    BotRig =  8,
 }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(unused)]
 pub enum RawPlace {
-    TopLeft  = 0,
-    TopMid   = 1,
-    TopRight = 2,
-    MidLeft  = 3,
-    MidMid   = 4,
-    MidRight = 5,
-    BotLeft  = 6,
-    BotMid   = 7,
-    BotRight = 8,
+    TopLef = 0,
+    TopMid = 1,
+    TopRig = 2,
+    MidLef = 3,
+    MidMid = 4,
+    MidRig = 5,
+    BotLef = 6,
+    BotMid = 7,
+    BotRig = 8,
 }
 
 #[repr(C)]

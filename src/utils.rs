@@ -25,72 +25,72 @@ pub enum Piece {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Place {
-    TopLeft,
+    TopLef,
     TopMid,
-    TopRight,
-    MidLeft,
+    TopRig,
+    MidLef,
     MidMid,
-    MidRight,
-    BotLeft,
+    MidRig,
+    BotLef,
     BotMid,
-    BotRight,
+    BotRig,
 }
 
 impl Place {
     fn from_index(index: usize) -> Self {
         match index {
-            0 => Self::TopLeft,
+            0 => Self::TopLef,
             1 => Self::TopMid,
-            2 => Self::TopRight,
-            3 => Self::MidLeft,
+            2 => Self::TopRig,
+            3 => Self::MidLef,
             4 => Self::MidMid,
-            5 => Self::MidRight,
-            6 => Self::BotLeft,
+            5 => Self::MidRig,
+            6 => Self::BotLef,
             7 => Self::BotMid,
-            8 => Self::BotRight,
+            8 => Self::BotRig,
             _ => panic!("invalid place"),
         }
     }
 
     fn to_index(self) -> usize {
         match self {
-            Self::TopLeft  => 0,
-            Self::TopMid   => 1,
-            Self::TopRight => 2,
-            Self::MidLeft  => 3,
-            Self::MidMid   => 4,
-            Self::MidRight => 5,
-            Self::BotLeft  => 6,
-            Self::BotMid   => 7,
-            Self::BotRight => 8,
+            Self::TopLef => 0,
+            Self::TopMid => 1,
+            Self::TopRig => 2,
+            Self::MidLef => 3,
+            Self::MidMid => 4,
+            Self::MidRig => 5,
+            Self::BotLef => 6,
+            Self::BotMid => 7,
+            Self::BotRig => 8,
         }
     }
 
     pub fn to_raw(&self) -> RawPlace {
         match *self {
-            Self::TopLeft  => RawPlace::TopLeft,
-            Self::TopMid   => RawPlace::TopMid,
-            Self::TopRight => RawPlace::TopRight,
-            Self::MidLeft  => RawPlace::MidLeft,
-            Self::MidMid   => RawPlace::MidMid,
-            Self::MidRight => RawPlace::MidRight,
-            Self::BotLeft  => RawPlace::BotLeft,
-            Self::BotMid   => RawPlace::BotMid,
-            Self::BotRight => RawPlace::BotRight,
+            Self::TopLef => RawPlace::TopLef,
+            Self::TopMid => RawPlace::TopMid,
+            Self::TopRig => RawPlace::TopRig,
+            Self::MidLef => RawPlace::MidLef,
+            Self::MidMid => RawPlace::MidMid,
+            Self::MidRig => RawPlace::MidRig,
+            Self::BotLef => RawPlace::BotLef,
+            Self::BotMid => RawPlace::BotMid,
+            Self::BotRig => RawPlace::BotRig,
         }
     }
 
     pub fn centeredness(&self) -> Centeredness {
         match self {
-            Place::TopLeft  => Centeredness::Corner,
-            Place::TopMid   => Centeredness::Edge,
-            Place::TopRight => Centeredness::Corner,
-            Place::MidLeft  => Centeredness::Edge,
-            Place::MidMid   => Centeredness::Center,
-            Place::MidRight => Centeredness::Edge,
-            Place::BotLeft  => Centeredness::Corner,
-            Place::BotMid   => Centeredness::Edge,
-            Place::BotRight => Centeredness::Corner,
+            Place::TopLef => Centeredness::Corner,
+            Place::TopMid => Centeredness::Edge,
+            Place::TopRig => Centeredness::Corner,
+            Place::MidLef => Centeredness::Edge,
+            Place::MidMid => Centeredness::Center,
+            Place::MidRig => Centeredness::Edge,
+            Place::BotLef => Centeredness::Corner,
+            Place::BotMid => Centeredness::Edge,
+            Place::BotRig => Centeredness::Corner,
         }
     }
 }
@@ -232,6 +232,7 @@ mod tests {
             let player = Player::Cross;
             assert_eq!(player.to_piece(), Piece::Cross);
             assert_eq!(player, Player::from_raw(RawTurn::Cross));
+
             let opposite = player.opposite();
             assert_eq!(opposite.to_piece(), Piece::Dot);
             assert_eq!(opposite, Player::from_raw(RawTurn::Dot));
@@ -268,14 +269,14 @@ mod tests {
         #[test]
         fn subboard_square_to_raw() {
             let move_ = Move::new(Spot {
-                subboard: Place::TopLeft,
-                square:   Place::BotRight,
+                subboard: Place::TopLef,
+                square:   Place::BotRig,
             });
-            assert_eq!(move_.subboard(), Place::TopLeft);
-            assert_eq!(move_.square(),   Place::BotRight);
+            assert_eq!(move_.subboard(), Place::TopLef);
+            assert_eq!(move_.square(),   Place::BotRig);
             let raw_move = move_.to_raw();
-            assert_eq!(raw_move.subboard, RawPlace::TopLeft);
-            assert_eq!(raw_move.square,   RawPlace::BotRight);
+            assert_eq!(raw_move.subboard, RawPlace::TopLef);
+            assert_eq!(raw_move.square,   RawPlace::BotRig);
         }
     }
 }

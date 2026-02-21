@@ -16,16 +16,16 @@ impl BoardState {
             let pattern = Pattern::from_raw(raw_board_state.board[subboard_index]);
 
             let active = match raw_board_state.active_subboard {
-                RawActiveSubBoard::All      => true,
-                RawActiveSubBoard::TopLeft  => subboard_index == 0,
-                RawActiveSubBoard::TopMid   => subboard_index == 1,
-                RawActiveSubBoard::TopRight => subboard_index == 2,
-                RawActiveSubBoard::MidLeft  => subboard_index == 3,
-                RawActiveSubBoard::MidMid   => subboard_index == 4,
-                RawActiveSubBoard::MidRight => subboard_index == 5,
-                RawActiveSubBoard::BotLeft  => subboard_index == 6,
-                RawActiveSubBoard::BotMid   => subboard_index == 7,
-                RawActiveSubBoard::BotRight => subboard_index == 8,
+                RawActiveSubBoard::All    => true,
+                RawActiveSubBoard::TopLef => subboard_index == 0,
+                RawActiveSubBoard::TopMid => subboard_index == 1,
+                RawActiveSubBoard::TopRig => subboard_index == 2,
+                RawActiveSubBoard::MidLef => subboard_index == 3,
+                RawActiveSubBoard::MidMid => subboard_index == 4,
+                RawActiveSubBoard::MidRig => subboard_index == 5,
+                RawActiveSubBoard::BotLef => subboard_index == 6,
+                RawActiveSubBoard::BotMid => subboard_index == 7,
+                RawActiveSubBoard::BotRig => subboard_index == 8,
             };
             Subboard::from_pattern(pattern, active)
         });
@@ -373,8 +373,8 @@ mod tests {
         let board_state = BoardState::from_raw(raw_board_state);
         
         let move_ = Move::new(Spot {
-            subboard: Place::BotLeft,
-            square: Place::TopLeft,
+            subboard: Place::BotLef,
+            square: Place::TopLef,
         });
         let unwind = panic::catch_unwind(|| {
             board_state.do_move(move_)
@@ -382,7 +382,7 @@ mod tests {
         assert!(unwind.is_err());
         
         let move_ = Move::new(Spot {
-            subboard: Place::MidLeft,
+            subboard: Place::MidLef,
             square: Place::BotMid,
         });
         let unwind = panic::catch_unwind(|| {
@@ -392,7 +392,7 @@ mod tests {
         
         let move_ = Move::new(Spot {
             subboard: Place::MidMid,
-            square: Place::MidRight,
+            square: Place::MidRig,
         });
         let unwind = panic::catch_unwind(|| {
             board_state.do_move(move_)
@@ -401,7 +401,7 @@ mod tests {
 
         let move_ = Move::new(Spot {
             subboard: Place::MidMid,
-            square: Place::TopLeft,
+            square: Place::TopLef,
         });
         let new_board_state = board_state.do_move(move_);
         assert_eq!(new_board_state.turn(), Player::Dot);
@@ -412,7 +412,7 @@ mod tests {
                     assert_eq!(new_board_state.subboard(Place::MidMid), Subboard::Won(Player::Cross));
                     return;
                 }
-                if place == Place::TopLeft {
+                if place == Place::TopLef {
                     assert!(matches!(subboard, Subboard::Active(_)));
                     return;
                 }
@@ -431,10 +431,10 @@ mod tests {
         let board_state = BoardState::from_raw(raw_board_state);
         
         let eligible_moves = vec![
-            Move::new(Spot { subboard: Place::MidMid, square: Place::TopLeft  }),
-            Move::new(Spot { subboard: Place::MidMid, square: Place::MidLeft  }),
+            Move::new(Spot { subboard: Place::MidMid, square: Place::TopLef  }),
+            Move::new(Spot { subboard: Place::MidMid, square: Place::MidLef  }),
             Move::new(Spot { subboard: Place::MidMid, square: Place::BotMid   }),
-            Move::new(Spot { subboard: Place::MidMid, square: Place::BotRight }),
+            Move::new(Spot { subboard: Place::MidMid, square: Place::BotRig }),
         ];
 
         assert_eq!(*board_state.eligible_moves(), *eligible_moves);

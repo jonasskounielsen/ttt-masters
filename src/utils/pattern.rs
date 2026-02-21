@@ -222,10 +222,10 @@ mod tests {
             RawPiece::Empty, RawPiece::Empty, RawPiece::Empty,
         ];
         let mut pattern = Pattern::from_raw(raw_pattern);
-        assert_eq!(*pattern.piece    (Place::TopLeft),  Piece::Cross);
-        assert_eq!(*pattern.piece_mut(Place::TopMid),   Piece::Dot);
-        assert_eq!(*pattern.piece    (Place::TopRight), Piece::Empty);
-        assert_eq!(*pattern.piece_mut(Place::MidMid),   Piece::Empty);
+        assert_eq!(*pattern.piece    (Place::TopLef), Piece::Cross);
+        assert_eq!(*pattern.piece_mut(Place::TopMid), Piece::Dot);
+        assert_eq!(*pattern.piece    (Place::TopRig), Piece::Empty);
+        assert_eq!(*pattern.piece_mut(Place::MidMid), Piece::Empty);
     }
 
     #[test]
@@ -312,7 +312,7 @@ mod tests {
         ]);
 
         let cross_spots = [
-            Place::TopLeft,  Place::MidMid,   Place::BotRight,
+            Place::TopLef, Place::MidMid, Place::BotRig,
         ];
         pattern
             .spots(Piece::Cross)
@@ -323,7 +323,7 @@ mod tests {
             });
 
         let dot_spots = [
-            Place::TopMid,   Place::MidRight, Place::BotLeft,
+            Place::TopMid, Place::MidRig, Place::BotLef,
         ];
         pattern
             .spots(Piece::Dot)
@@ -334,7 +334,7 @@ mod tests {
             });
 
         let free_spots = [
-            Place::TopRight, Place::MidLeft,  Place::BotMid,
+            Place::TopRig, Place::MidLef, Place::BotMid,
         ];
         pattern
             .spots(Piece::Empty)
@@ -366,9 +366,9 @@ mod tests {
             "O   O",
             "  X X",
         ]);
-        assert!(winnable_both.wins  (Place::BotLeft, Player::Dot));
-        assert!(winnable_both.blocks(Place::BotLeft, Player::Cross));
-        assert!(winnable_both.wins  (Place::BotLeft, Player::Cross));
-        assert!(winnable_both.blocks(Place::BotLeft, Player::Dot));
+        assert!(winnable_both.wins  (Place::BotLef, Player::Dot));
+        assert!(winnable_both.blocks(Place::BotLef, Player::Cross));
+        assert!(winnable_both.wins  (Place::BotLef, Player::Cross));
+        assert!(winnable_both.blocks(Place::BotLef, Player::Dot));
     }
 }
