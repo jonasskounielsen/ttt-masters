@@ -70,7 +70,7 @@ impl BoardState {
     }
     
     pub fn do_move(&self, move_: Move) -> Self {
-        let mut new_subboards = self.board;
+        let mut new_subboards = self.board; // Copies board.
         let subboard = &mut new_subboards[move_.subboard().to_index()];
         let pattern = match subboard {
             Subboard::Won(_)      => panic!("invalid move; subboard is won"),
@@ -90,6 +90,8 @@ impl BoardState {
         
         if let PatternState::Won(player) = pattern.state() {
             *subboard = Subboard::Won(player);
+        } else {
+            *subboard = Subboard::Inactive(*pattern);
         }
 
         let new_active_subboard = &mut new_subboards[move_.square().to_index()];
@@ -112,7 +114,8 @@ impl BoardState {
     }
 
     pub fn eligible_moves(&self) -> Box<[Move<'_>]> {
-        self.enumerate()
+        self
+            .enumerate()
             .flat_map(|(subboard_place, subboard)| {
                 match *subboard {
                     Subboard::Won(_) => Box::new([]),

@@ -1,25 +1,25 @@
-use rustbot::{algorithms::{greedy::greedy, minimax::minimax}, utils::board_state::BoardState};
+use rustbot::{algorithms::{minimax::minimax}, utils::board_state::BoardState};
 
 fn main() {
     let board_state = BoardState::dbg_from_matrix(
         [
             "     .     .X X X",
-            "  O  .     .X X X",
+            "     .     .X X X",
             "     .     .X X X",
 
-            "     .X X X.    X",
-            "  X X.X X X.     ",
+            "     .X X X.     ",
+            "     .X X X.     ",
             "     .X X X.     ",
             
             "     .     .     ",
-            "  X X.  O  .  O  ",
+            "  X X.     .     ",
             "     .     .     ",
-        ], -1, "dot",
+        ], 6, "dot",
     );
 
     board_state.dbg_print();
     
     let move_ = minimax(&board_state);
 
-    eprintln!("{:?}", move_);
+    move_.dbg_print();
 }

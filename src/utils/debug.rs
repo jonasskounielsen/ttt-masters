@@ -141,11 +141,11 @@ impl Pattern {
 
 impl<'a> Move<'a> {
     pub fn dbg_to_string(&self) -> String {
-        format!("Subboard: {:?} square: {:?}", self.subboard(), self.square())
+        format!("Subboard: {:?}, square: {:?}", self.subboard(), self.square())
     }
     
     pub fn dbg_print(&self) {
-        eprintln!("{:?}", self.dbg_to_string());
+        eprintln!("{}", self.dbg_to_string());
     }
 }
 
@@ -181,7 +181,7 @@ impl RawTurn {
     pub fn dbg_from_character(character: &str) -> Self {
         match character {
             "cross" => RawTurn::Cross,
-            "dot" => RawTurn::Dot,
+            "dot"   => RawTurn::Dot,
             _ => panic!("invalid turn"),
         }
     }
