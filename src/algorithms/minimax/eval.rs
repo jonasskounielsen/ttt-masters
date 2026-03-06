@@ -1,6 +1,12 @@
-use crate::utils::{board_state::BoardState, pattern::PatternState};
+use crate::utils::{Move, board_state::BoardState, pattern::PatternState};
 
 pub type Eval = f32;
+
+const SUBBOARDS_WON_FACTOR:          f32 = 1.0;
+const SUBBOARDS_WON_PLACES_FACTOR:   f32 = 0.5;
+const SUBBOARDS_ALMOST_WON:          f32 = 0.3;
+const SUBBOARDS_DOUBLY_ALMOST_WON:   f32 = 0.3;
+const SUBBOARDS_PIECE_PLACES_FACTOR: f32 = 0.05;
 
 pub fn eval(board_state: &BoardState) -> Eval {
     match board_state.state() {
@@ -15,26 +21,40 @@ pub fn eval(board_state: &BoardState) -> Eval {
 
     let mut eval = 0.0;
 
-    eval += 1.0 * eval_terms::subboards_won(board_state);
-
-    eval += 0.3 * eval_terms::subboards_almost_won(board_state);
-
-    eval += 0.3 * eval_terms::subboards_doubly_almost_won(board_state);
+    eval += eval_terms::eval_subboards_won         (board_state) * SUBBOARDS_WON_FACTOR;
+    eval += eval_terms::eval_subboards_won_places  (board_state) * SUBBOARDS_WON_PLACES_FACTOR;
+    eval += eval_terms::subboards_almost_won       (board_state) * SUBBOARDS_ALMOST_WON;
+    eval += eval_terms::subboards_doubly_almost_won(board_state) * SUBBOARDS_DOUBLY_ALMOST_WON;
+    eval += eval_terms::eval_piece_places          (board_state) * SUBBOARDS_PIECE_PLACES_FACTOR;
 
     eval
 }
 
-mod eval_terms {
-    use crate::{algorithms::minimax::eval::Eval, utils::board_state::BoardState};
+pub fn dbg_print_eval_breakdown(board_state: &BoardState, move_: Move, index: usize) {
+    eprintln!(
+        "{:>2}: eval: {:>7}, {} (sbbwon: {:>5}, sbbplc: {:>5}, sbbalm: {:>5},\n\
+        >                  sbbdal: {:>5}, pceplc: {:>5})",
+        index,
+        eval(board_state),
+        move_.dbg_to_string(),
+        eval_terms::eval_subboards_won         (board_state) * SUBBOARDS_WON_FACTOR,
+        eval_terms::eval_subboards_won_places  (board_state) * SUBBOARDS_WON_PLACES_FACTOR,
+        eval_terms::subboards_almost_won       (board_state) * SUBBOARDS_ALMOST_WON,
+        eval_terms::subboards_doubly_almost_won(board_state) * SUBBOARDS_DOUBLY_ALMOST_WON,
+        eval_terms::eval_piece_places          (board_state) * SUBBOARDS_PIECE_PLACES_FACTOR,
+    );
+}
 
-    pub fn subboards_won(board_state: &BoardState) -> Eval {
+mod eval_terms {
+    use crate::{algorithms::minimax::eval::Eval, utils::{Centeredness, Place, board_state::BoardState}};
+
+    pub fn eval_subboards_won(board_state: &BoardState) -> Eval {
         let subboard_pattern = board_state.subboard_pattern();
 
         let subboards_won  = subboard_pattern.spots(board_state.turn().to_piece());
         let subboards_lost = subboard_pattern.spots(board_state.turn().opposite().to_piece());
 
-        subboards_won .len() as f32 -
-        subboards_lost.len() as f32
+        subboards_won.len() as Eval - subboards_lost.len() as Eval
     }
 
     pub fn subboards_almost_won(board_state: &BoardState) -> Eval {
@@ -44,7 +64,7 @@ mod eval_terms {
             .enumerate()
             .filter(|(_, subboard)| {
                 subboard
-                    .pattern_if_active()
+                    .pattern_if_undecided()
                     .map(|pattern| pattern.almost_won_by(board_state.turn()))
                     .unwrap_or(false)
             })
@@ -54,7 +74,7 @@ mod eval_terms {
             .enumerate()
             .filter(|(_, subboard)| {
                 subboard
-                    .pattern_if_active()
+                    .pattern_if_undecided()
                     .map(|pattern| pattern.almost_won_by(board_state.turn().opposite()))
                     .unwrap_or(false)
             })
@@ -70,7 +90,7 @@ mod eval_terms {
             .enumerate()
             .filter(|(_, subboard)| {
                 subboard
-                    .pattern_if_active()
+                    .pattern_if_undecided()
                     .map(|pattern| pattern.doubly_almost_won_by(board_state.turn()))
                     .unwrap_or(false)
             })
@@ -80,12 +100,51 @@ mod eval_terms {
             .enumerate()
             .filter(|(_, subboard)| {
                 subboard
-                    .pattern_if_active()
+                    .pattern_if_undecided()
                     .map(|pattern| pattern.doubly_almost_won_by(board_state.turn().opposite()))
                     .unwrap_or(false)
             })
             .count() as f32;
 
         count
+    }
+
+    pub fn eval_subboards_won_places(board_state: &BoardState) -> Eval {
+        let subboard_pattern = board_state.subboard_pattern();
+
+        let subboards_won  = subboard_pattern.spots(board_state.turn().to_piece());
+        let subboards_lost = subboard_pattern.spots(board_state.turn().opposite().to_piece());
+
+        places_eval(subboards_won) - places_eval(subboards_lost)
+    }
+
+    pub fn eval_piece_places(board_state: &BoardState) -> Eval {
+        let own_piece_places = board_state
+            .enumerate()
+            .filter_map(|(place, _subboard)| board_state.pattern_if_undecided(place))
+            .flat_map(|pattern| pattern.spots(board_state.turn().to_piece()))
+            .collect();
+
+        let opposite_piece_places = board_state
+            .enumerate()
+            .filter_map(|(place, _subboard)| board_state.pattern_if_undecided(place))
+            .flat_map(|pattern| pattern.spots(board_state.turn().opposite().to_piece()))
+            .collect();
+
+        places_eval(own_piece_places) - places_eval(opposite_piece_places)
+    }
+
+    fn places_eval(places: Box<[Place]>) -> Eval {
+        places
+            .iter()
+            .map(|place| {
+                match place.centeredness() {
+                    Centeredness::Center => 1.0,
+                    Centeredness::Edge   => 0.5,
+                    Centeredness::Corner => 0.0,
+                }
+            })
+            .reduce(|acc, place| acc + place)
+            .unwrap_or(0.0)
     }
 }

@@ -141,11 +141,11 @@ impl Pattern {
 
 impl<'a> Move<'a> {
     pub fn dbg_to_string(&self) -> String {
-        format!("Subboard: {:?} square: {:?}", self.subboard(), self.square())
+        format!("Subboard: {:?}, square: {:?}", self.subboard(), self.square())
     }
     
     pub fn dbg_print(&self) {
-        eprintln!("{:?}", self.dbg_to_string());
+        eprintln!("{}", self.dbg_to_string());
     }
 }
 
@@ -181,7 +181,7 @@ impl RawTurn {
     pub fn dbg_from_character(character: &str) -> Self {
         match character {
             "cross" => RawTurn::Cross,
-            "dot" => RawTurn::Dot,
+            "dot"   => RawTurn::Dot,
             _ => panic!("invalid turn"),
         }
     }
@@ -191,15 +191,15 @@ impl RawActiveSubBoard {
     pub fn dbg_from_i32(number: i32) -> Self {
         match number {
             -1 => RawActiveSubBoard::All,
-             0 => RawActiveSubBoard::TopLeft,
+             0 => RawActiveSubBoard::TopLef,
              1 => RawActiveSubBoard::TopMid,
-             2 => RawActiveSubBoard::TopRight,
-             3 => RawActiveSubBoard::MidLeft,
+             2 => RawActiveSubBoard::TopRig,
+             3 => RawActiveSubBoard::MidLef,
              4 => RawActiveSubBoard::MidMid,
-             5 => RawActiveSubBoard::MidRight,
-             6 => RawActiveSubBoard::BotLeft,
+             5 => RawActiveSubBoard::MidRig,
+             6 => RawActiveSubBoard::BotLef,
              7 => RawActiveSubBoard::BotMid,
-             8 => RawActiveSubBoard::BotRight,
+             8 => RawActiveSubBoard::BotRig,
              _ => panic!("invalid active subboard"),
         }
     }
