@@ -21,6 +21,7 @@ pub fn eval(board_state: &BoardState) -> Eval {
     eval += eval_terms::subboards_almost_won       (board_state);
     eval += eval_terms::subboards_doubly_almost_won(board_state);
     eval += eval_terms::eval_piece_places          (board_state);
+    eval += eval_terms::eval_active_subboard_pieces(board_state);
 
     eval
 }
@@ -28,7 +29,7 @@ pub fn eval(board_state: &BoardState) -> Eval {
 pub fn dbg_print_eval_breakdown(board_state: &BoardState, move_: Move, index: usize) {
     eprintln!(
         "{:>2}: eval: {:>7}, {} (gmealm: {:>5}, sbbwon: {:>5}, sbbplc: {:>5},\n\
-        >                  sbbalm: {:>5}, sbbdal: {:>5}, pceplc: {:>5})",
+        >                  sbbalm: {:>5}, sbbdal: {:>5}, pceplc: {:>5}, apcplc: {:>5})",
         index,
         eval(board_state),
         move_.dbg_to_string(),
@@ -38,18 +39,20 @@ pub fn dbg_print_eval_breakdown(board_state: &BoardState, move_: Move, index: us
         eval_terms::subboards_almost_won       (board_state),
         eval_terms::subboards_doubly_almost_won(board_state),
         eval_terms::eval_piece_places          (board_state),
+        eval_terms::eval_active_subboard_pieces(board_state),
     );
 }
 
 mod eval_terms {
     use crate::{algorithms::minimax::eval::Eval, utils::{Centeredness, Place, board_state::BoardState}};
 
-    const GAME_ALMOST_WON_FACTOR:      f32 = 1.0;
-    const SUBBOARDS_WON_FACTOR:        f32 = 1.0;
-    const SUBBOARDS_WON_PLACES_FACTOR: f32 = 0.5;
-    const SUBBOARDS_ALMOST_WON:        f32 = 0.3;
-    const SUBBOARDS_DOUBLY_ALMOST_WON: f32 = 0.15;
-    const PIECE_PLACES_FACTOR:         f32 = 0.05;
+    const GAME_ALMOST_WON_FACTOR:        f32 = 1.0;
+    const SUBBOARDS_WON_FACTOR:          f32 = 1.0;
+    const SUBBOARDS_WON_PLACES_FACTOR:   f32 = 0.5;
+    const SUBBOARDS_ALMOST_WON:          f32 = 0.3;
+    const SUBBOARDS_DOUBLY_ALMOST_WON:   f32 = 0.15;
+    const PIECE_PLACES_FACTOR:           f32 = 0.05;
+    const ACTIVE_SUBBOARD_PIECES_FACTOR: f32 = 0.1;
 
     pub fn eval_game_almost_won(board_state: &BoardState) -> Eval {
         let subboard_pattern = board_state.subboard_pattern();
@@ -154,6 +157,22 @@ mod eval_terms {
             .collect();
 
         places_eval(own_piece_places) - places_eval(opposite_piece_places) * PIECE_PLACES_FACTOR
+    }
+
+    pub fn eval_active_subboard_pieces(board_state: &BoardState) -> Eval {
+        let own_piece_places = board_state
+            .enumerate()
+            .filter_map(|(place, _subboard)| board_state.pattern_if_active(place))
+            .flat_map(|pattern| pattern.spots(board_state.turn().to_piece()))
+            .collect();
+
+        let opposite_piece_places = board_state
+            .enumerate()
+            .filter_map(|(place, _subboard)| board_state.pattern_if_active(place))
+            .flat_map(|pattern| pattern.spots(board_state.turn().opposite().to_piece()))
+            .collect();
+
+        places_eval(own_piece_places) - places_eval(opposite_piece_places) * ACTIVE_SUBBOARD_PIECES_FACTOR
     }
 
     fn places_eval(places: Box<[Place]>) -> Eval {

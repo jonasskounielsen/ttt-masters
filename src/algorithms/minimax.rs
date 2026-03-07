@@ -36,7 +36,6 @@ fn minimax_inner(board_state: &BoardState, depth_plies: u32, own_turn: bool) -> 
             -eval
         };
     }
-    board_state.dbg_print();
     
     let eligible_moves = board_state.eligible_moves();
 
