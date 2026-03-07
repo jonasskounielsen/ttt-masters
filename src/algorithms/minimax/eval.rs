@@ -2,13 +2,16 @@ use crate::utils::{Move, board_state::BoardState, pattern::PatternState};
 
 pub type Eval = f32;
 
+pub const EVAL_WON:  f32 =  1000.0;
+pub const EVAL_LOST: f32 = -1000.0;
+
 pub fn eval(board_state: &BoardState) -> Eval {
     match board_state.state() {
         PatternState::Won(player) if player == board_state.turn() => {
-            return  1000.0;
+            return EVAL_WON;
         },
         PatternState::Won(player) if player != board_state.turn() => {
-            return -1000.0;
+            return EVAL_LOST;
         },
         _ => (),
     }

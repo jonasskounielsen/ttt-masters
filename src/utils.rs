@@ -16,7 +16,7 @@ pub mod debug;
 
 mod raw;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Piece {
     Cross,
     Empty,
@@ -108,7 +108,7 @@ pub struct Spot {
     pub square:   Place,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Player {
     Cross,
     Dot,
@@ -137,7 +137,7 @@ impl Player {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Subboard {
     Won(Player),
     Active  (Pattern),

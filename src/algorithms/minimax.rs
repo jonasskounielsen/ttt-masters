@@ -1,35 +1,45 @@
-use crate::{algorithms::minimax::eval::{Eval, dbg_print_eval_breakdown, eval}, utils::{Move, board_state::BoardState, pattern::PatternState}};
+use crate::{algorithms::minimax::{eval::{Eval, dbg_print_eval_breakdown, eval}, transposition_table::TranspositionTable}, utils::{Move, board_state::BoardState, pattern::PatternState}};
 
 mod eval;
+mod transposition_table;
 
-const SEARCH_DEPTH: u32 = 3;
+const SEARCH_DEPTH_PLIES: u32 = 3;
 
 pub fn minimax(board_state: &BoardState) -> Move<'_> {
+    let mut transposition_table = TranspositionTable::new();
+
     let eligible_moves = board_state.eligible_moves();
 
-    let best_move_index = eligible_moves
+    *eligible_moves
         .iter()
-        .enumerate()
-        .map(|(index, move_)| {
-            let eval = minimax_inner(&board_state.do_move(*move_), SEARCH_DEPTH - 1, false);
-            (eval, index)
+        .map(|move_| {
+            let eval = minimax_inner(&board_state.do_move(*move_), &mut transposition_table, SEARCH_DEPTH_PLIES - 1, false);
+            (eval, move_)
         })
-        .reduce(|best_eval, eval| {
-            if best_eval.0 > eval.0 {
-                best_eval
+        .reduce(|best_move, move_| {
+            if best_move.0 > move_.0 {
+                best_move
             } else {
-                eval
+                move_
             }
         })
         .expect("no eligible move")
-        .1;
-
-    eligible_moves[best_move_index]
+        .1
 }
 
-fn minimax_inner(board_state: &BoardState, depth_plies: u32, own_turn: bool) -> Eval {
-    if depth_plies == 0 || matches!(board_state.state(), PatternState::Won(_)) {
+fn minimax_inner(
+    board_state: &BoardState,
+    transposition_table: &mut TranspositionTable,
+    depth: u32,
+    own_turn: bool,
+) -> Eval {
+    if let Some(eval) = transposition_table.get(board_state, depth) {
+        return eval;
+    }
+
+    if depth == 0 || matches!(board_state.state(), PatternState::Won(_)) {
         let eval = eval(board_state);
+        transposition_table.set(board_state, depth, eval);
         return if own_turn {
              eval
         } else {
@@ -39,16 +49,22 @@ fn minimax_inner(board_state: &BoardState, depth_plies: u32, own_turn: bool) -> 
     
     let eligible_moves = board_state.eligible_moves();
 
-    eligible_moves
+    let eval = eligible_moves
         .iter()
-        .map(|move_| minimax_inner(&board_state.do_move(*move_), depth_plies - 1, !own_turn))
+        .map(|move_|
+            minimax_inner(&board_state.do_move(*move_), transposition_table, depth - 1, !own_turn)
+        )
         .reduce(|best_move, move_| {
             if own_turn { // Assume that the enemy plays optimally.
                 best_move.max(move_)
             } else {
                 best_move.min(move_)
             }
-        }).expect("no eligible move")
+        })
+        .expect("no eligible move");
+
+    transposition_table.set(board_state, depth, eval);
+    eval
 }
 
 #[allow(unused)]

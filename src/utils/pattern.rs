@@ -5,7 +5,7 @@ use super::Piece;
 use super::Place;
 use super::Player;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Pattern([Piece; 9]);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
