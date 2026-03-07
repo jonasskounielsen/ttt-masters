@@ -162,8 +162,8 @@ mod eval_terms {
             .map(|place| {
                 match place.centeredness() {
                     Centeredness::Center => 1.0,
+                    Centeredness::Corner => 0.75,
                     Centeredness::Edge   => 0.5,
-                    Centeredness::Corner => 0.0,
                 }
             })
             .reduce(|acc, place| acc + place)
