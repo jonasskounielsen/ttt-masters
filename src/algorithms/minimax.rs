@@ -2,7 +2,7 @@ use crate::{algorithms::minimax::eval::{Eval, dbg_print_eval_breakdown, eval}, u
 
 mod eval;
 
-const SEARCH_DEPTH: u32 = 1;
+const SEARCH_DEPTH: u32 = 3;
 
 pub fn minimax(board_state: &BoardState) -> Move<'_> {
     let eligible_moves = board_state.eligible_moves();

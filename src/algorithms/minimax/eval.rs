@@ -2,12 +2,6 @@ use crate::utils::{Move, board_state::BoardState, pattern::PatternState};
 
 pub type Eval = f32;
 
-const SUBBOARDS_WON_FACTOR:          f32 = 1.0;
-const SUBBOARDS_WON_PLACES_FACTOR:   f32 = 0.5;
-const SUBBOARDS_ALMOST_WON:          f32 = 0.3;
-const SUBBOARDS_DOUBLY_ALMOST_WON:   f32 = 0.3;
-const SUBBOARDS_PIECE_PLACES_FACTOR: f32 = 0.05;
-
 pub fn eval(board_state: &BoardState) -> Eval {
     match board_state.state() {
         PatternState::Won(player) if player == board_state.turn() => {
@@ -21,32 +15,60 @@ pub fn eval(board_state: &BoardState) -> Eval {
 
     let mut eval = 0.0;
 
-    eval += eval_terms::eval_subboards_won         (board_state) * SUBBOARDS_WON_FACTOR;
-    eval += eval_terms::eval_subboards_won_places  (board_state) * SUBBOARDS_WON_PLACES_FACTOR;
-    eval += eval_terms::subboards_almost_won       (board_state) * SUBBOARDS_ALMOST_WON;
-    eval += eval_terms::subboards_doubly_almost_won(board_state) * SUBBOARDS_DOUBLY_ALMOST_WON;
-    eval += eval_terms::eval_piece_places          (board_state) * SUBBOARDS_PIECE_PLACES_FACTOR;
+    eval += eval_terms::eval_game_almost_won       (board_state);
+    eval += eval_terms::eval_subboards_won         (board_state);
+    eval += eval_terms::eval_subboards_won_places  (board_state);
+    eval += eval_terms::subboards_almost_won       (board_state);
+    eval += eval_terms::subboards_doubly_almost_won(board_state);
+    eval += eval_terms::eval_piece_places          (board_state);
 
     eval
 }
 
 pub fn dbg_print_eval_breakdown(board_state: &BoardState, move_: Move, index: usize) {
     eprintln!(
-        "{:>2}: eval: {:>7}, {} (sbbwon: {:>5}, sbbplc: {:>5}, sbbalm: {:>5},\n\
-        >                  sbbdal: {:>5}, pceplc: {:>5})",
+        "{:>2}: eval: {:>7}, {} (gmealm: {:>5}, sbbwon: {:>5}, sbbplc: {:>5},\n\
+        >                  sbbalm: {:>5}, sbbdal: {:>5}, pceplc: {:>5})",
         index,
         eval(board_state),
         move_.dbg_to_string(),
-        eval_terms::eval_subboards_won         (board_state) * SUBBOARDS_WON_FACTOR,
-        eval_terms::eval_subboards_won_places  (board_state) * SUBBOARDS_WON_PLACES_FACTOR,
-        eval_terms::subboards_almost_won       (board_state) * SUBBOARDS_ALMOST_WON,
-        eval_terms::subboards_doubly_almost_won(board_state) * SUBBOARDS_DOUBLY_ALMOST_WON,
-        eval_terms::eval_piece_places          (board_state) * SUBBOARDS_PIECE_PLACES_FACTOR,
+        eval_terms::eval_game_almost_won       (board_state),
+        eval_terms::eval_subboards_won         (board_state),
+        eval_terms::eval_subboards_won_places  (board_state),
+        eval_terms::subboards_almost_won       (board_state),
+        eval_terms::subboards_doubly_almost_won(board_state),
+        eval_terms::eval_piece_places          (board_state),
     );
 }
 
 mod eval_terms {
     use crate::{algorithms::minimax::eval::Eval, utils::{Centeredness, Place, board_state::BoardState}};
+
+    const GAME_ALMOST_WON_FACTOR:      f32 = 1.0;
+    const SUBBOARDS_WON_FACTOR:        f32 = 1.0;
+    const SUBBOARDS_WON_PLACES_FACTOR: f32 = 0.5;
+    const SUBBOARDS_ALMOST_WON:        f32 = 0.3;
+    const SUBBOARDS_DOUBLY_ALMOST_WON: f32 = 0.15;
+    const PIECE_PLACES_FACTOR:         f32 = 0.05;
+
+    pub fn eval_game_almost_won(board_state: &BoardState) -> Eval {
+        let subboard_pattern = board_state.subboard_pattern();
+        let mut count = 0.0;
+
+        if subboard_pattern.almost_won_by(board_state.turn()) {
+            count += 1.0;
+        }
+        if subboard_pattern.doubly_almost_won_by(board_state.turn()) {
+            count += 1.0;
+        }
+        if subboard_pattern.almost_won_by(board_state.turn().opposite()) {
+            count -= 1.0;
+        }
+        if subboard_pattern.doubly_almost_won_by(board_state.turn().opposite()) {
+            count -= 1.0;
+        }
+        count * GAME_ALMOST_WON_FACTOR
+    }
 
     pub fn eval_subboards_won(board_state: &BoardState) -> Eval {
         let subboard_pattern = board_state.subboard_pattern();
@@ -54,7 +76,7 @@ mod eval_terms {
         let subboards_won  = subboard_pattern.spots(board_state.turn().to_piece());
         let subboards_lost = subboard_pattern.spots(board_state.turn().opposite().to_piece());
 
-        subboards_won.len() as Eval - subboards_lost.len() as Eval
+        (subboards_won.len() as Eval - subboards_lost.len() as Eval) * SUBBOARDS_WON_FACTOR
     }
 
     pub fn subboards_almost_won(board_state: &BoardState) -> Eval {
@@ -68,7 +90,7 @@ mod eval_terms {
                     .map(|pattern| pattern.almost_won_by(board_state.turn()))
                     .unwrap_or(false)
             })
-            .count() as f32;
+            .count() as Eval;
 
         count -= board_state
             .enumerate()
@@ -78,9 +100,9 @@ mod eval_terms {
                     .map(|pattern| pattern.almost_won_by(board_state.turn().opposite()))
                     .unwrap_or(false)
             })
-            .count() as f32;
+            .count() as Eval;
 
-        count
+        count * SUBBOARDS_ALMOST_WON
     }
 
     pub fn subboards_doubly_almost_won(board_state: &BoardState) -> Eval {
@@ -94,7 +116,7 @@ mod eval_terms {
                     .map(|pattern| pattern.doubly_almost_won_by(board_state.turn()))
                     .unwrap_or(false)
             })
-            .count() as f32;
+            .count() as Eval;
 
         count -= board_state
             .enumerate()
@@ -104,9 +126,9 @@ mod eval_terms {
                     .map(|pattern| pattern.doubly_almost_won_by(board_state.turn().opposite()))
                     .unwrap_or(false)
             })
-            .count() as f32;
+            .count() as Eval;
 
-        count
+        count * SUBBOARDS_DOUBLY_ALMOST_WON
     }
 
     pub fn eval_subboards_won_places(board_state: &BoardState) -> Eval {
@@ -115,7 +137,7 @@ mod eval_terms {
         let subboards_won  = subboard_pattern.spots(board_state.turn().to_piece());
         let subboards_lost = subboard_pattern.spots(board_state.turn().opposite().to_piece());
 
-        places_eval(subboards_won) - places_eval(subboards_lost)
+        places_eval(subboards_won) - places_eval(subboards_lost) * SUBBOARDS_WON_PLACES_FACTOR
     }
 
     pub fn eval_piece_places(board_state: &BoardState) -> Eval {
@@ -131,7 +153,7 @@ mod eval_terms {
             .flat_map(|pattern| pattern.spots(board_state.turn().opposite().to_piece()))
             .collect();
 
-        places_eval(own_piece_places) - places_eval(opposite_piece_places)
+        places_eval(own_piece_places) - places_eval(opposite_piece_places) * PIECE_PLACES_FACTOR
     }
 
     fn places_eval(places: Box<[Place]>) -> Eval {
