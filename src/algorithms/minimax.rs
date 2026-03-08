@@ -69,6 +69,8 @@ fn minimax_inner(
 
 #[allow(unused)]
 pub fn dbg_print_moves(board_state: &BoardState) {
+    eprintln!("{:<51}  gmalw |  sbw  | sbwpl | sbalw | sbdaw | pcpl  | apcpl", "");
+
     let eligible_moves = board_state.eligible_moves();
 
     eligible_moves

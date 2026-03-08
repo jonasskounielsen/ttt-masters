@@ -30,20 +30,24 @@ pub fn eval(board_state: &BoardState) -> Eval {
 }
 
 pub fn dbg_print_eval_breakdown(board_state: &BoardState, move_: Move, index: usize) {
+    // Negate eval to present from other player's perspective.
     eprintln!(
-        "{:>2}: eval: {:>7}, {} (gmealm: {:>5}, sbbwon: {:>5}, sbbplc: {:>5},\n\
-        >                  sbbalm: {:>5}, sbbdal: {:>5}, pceplc: {:>5}, apcplc: {:>5})",
+        "{:>2}: eval: {}, {} ({}, {}, {}, {}, {}, {}, {})",
         index,
-        eval(board_state),
+        format_eval(-eval(board_state)),
         move_.dbg_to_string(),
-        eval_terms::eval_game_almost_won       (board_state),
-        eval_terms::eval_subboards_won         (board_state),
-        eval_terms::eval_subboards_won_places  (board_state),
-        eval_terms::subboards_almost_won       (board_state),
-        eval_terms::subboards_doubly_almost_won(board_state),
-        eval_terms::eval_piece_places          (board_state),
-        eval_terms::eval_active_subboard_pieces(board_state),
+        format_eval(-eval_terms::eval_game_almost_won       (board_state)),
+        format_eval(-eval_terms::eval_subboards_won         (board_state)),
+        format_eval(-eval_terms::eval_subboards_won_places  (board_state)),
+        format_eval(-eval_terms::subboards_almost_won       (board_state)),
+        format_eval(-eval_terms::subboards_doubly_almost_won(board_state)),
+        format_eval(-eval_terms::eval_piece_places          (board_state)),
+        format_eval(-eval_terms::eval_active_subboard_pieces(board_state)),
     );
+}
+
+fn format_eval(eval: Eval) -> String {
+    format!("{:+>6.3}", eval)
 }
 
 mod eval_terms {
@@ -149,17 +153,17 @@ mod eval_terms {
     pub fn eval_piece_places(board_state: &BoardState) -> Eval {
         let own_piece_places = board_state
             .enumerate()
-            .filter_map(|(place, _subboard)| board_state.pattern_if_undecided(place))
+            .filter_map(|(_, subboard)| subboard.pattern_if_undecided())
             .flat_map(|pattern| pattern.spots(board_state.turn().to_piece()))
             .collect();
 
         let opposite_piece_places = board_state
             .enumerate()
-            .filter_map(|(place, _subboard)| board_state.pattern_if_undecided(place))
+            .filter_map(|(_, subboard)| subboard.pattern_if_undecided())
             .flat_map(|pattern| pattern.spots(board_state.turn().opposite().to_piece()))
             .collect();
 
-        places_eval(own_piece_places) - places_eval(opposite_piece_places) * PIECE_PLACES_FACTOR
+        (places_eval(own_piece_places) - places_eval(opposite_piece_places)) * PIECE_PLACES_FACTOR
     }
 
     pub fn eval_active_subboard_pieces(board_state: &BoardState) -> Eval {
@@ -175,7 +179,7 @@ mod eval_terms {
             .flat_map(|pattern| pattern.spots(board_state.turn().opposite().to_piece()))
             .collect();
 
-        places_eval(own_piece_places) - places_eval(opposite_piece_places) * ACTIVE_SUBBOARD_PIECES_FACTOR
+        (places_eval(own_piece_places) - places_eval(opposite_piece_places)) * ACTIVE_SUBBOARD_PIECES_FACTOR
     }
 
     fn places_eval(places: Box<[Place]>) -> Eval {

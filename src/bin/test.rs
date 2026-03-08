@@ -4,17 +4,17 @@ fn main() {
     let board_state = BoardState::dbg_from_matrix(
         [
             "     .     .     ",
-            "  O  .     .     ",
+            "     .     .     ",
             "     .     .     ",
 
             "     .     .     ",
             "     .  X  .     ",
-            "     .X O O.     ",
+            "     .  O O.     ",
             
-            "     .     .X    ",
-            "  O  .  X  .     ",
             "     .     .     ",
-        ], 6, "dot",
+            "     .  X  .  X  ",
+            "     .     .     ",
+        ], -1, "dot",
     );
 
     board_state.dbg_print();

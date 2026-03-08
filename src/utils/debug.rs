@@ -56,19 +56,6 @@ impl BoardState {
             })
             .collect();
 
-        active_subboards
-            .iter()
-            .enumerate()
-            .for_each(|(i, subboard)| {
-                eprint!("{}", subboard);
-
-                if i % 3 == 2 {
-                    eprintln!();
-                } else {
-                    eprint!(" ");
-                }
-        });        
-
         let mut rows = vec![vec![String::from(" "); 9]; 9];
 
         for subboard_index in 0..9 {
@@ -100,12 +87,17 @@ impl BoardState {
                     .iter()
                     .enumerate()
                     .for_each(|(j, character)| {
-                        eprint!("{}", character);
+                        let subboard = j / 3 + (i / 3) * 3;
 
-                        if j == 2 || j == 5 {
-                            eprint!(" |");
+                        if active_subboards[subboard] && character == " " {
+                            eprint!("+");
                         } else {
-                            eprint!(" ");
+                            eprint!("{}", character);
+                        }
+
+                        eprint!(" ");
+                        if j == 2 || j == 5 {
+                            eprint!("|");
                         }
                     });
                     eprintln!();
