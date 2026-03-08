@@ -8,12 +8,15 @@ const SEARCH_DEPTH_PLIES: u32 = 3;
 pub fn minimax(board_state: &BoardState) -> Move<'_> {
     let mut transposition_table = TranspositionTable::new();
 
+    minimax_inner(board_state, &mut transposition_table, 0, true);
+
     let eligible_moves = board_state.eligible_moves();
 
     *eligible_moves
         .iter()
         .map(|move_| {
-            let eval = minimax_inner(&board_state.do_move(*move_), &mut transposition_table, SEARCH_DEPTH_PLIES - 1, false);
+            let eval = transposition_table.get(&board_state.do_move(*move_), 1)
+                .expect("depth 1 moves should have been searched");
             (eval, move_)
         })
         .reduce(|best_move, move_| {
@@ -37,14 +40,14 @@ fn minimax_inner(
         return eval;
     }
 
-    if depth == 0 || matches!(board_state.state(), PatternState::Won(_)) {
-        let eval = eval(board_state);
-        transposition_table.set(board_state, depth, eval);
-        return if own_turn {
-             eval
+    if depth == SEARCH_DEPTH_PLIES || matches!(board_state.state(), PatternState::Won(_)) {
+        let eval = if own_turn {
+             eval(board_state)
         } else {
-            -eval
+            -eval(board_state)
         };
+        transposition_table.set(board_state, depth, eval);
+        return eval;
     }
     
     let eligible_moves = board_state.eligible_moves();
@@ -52,7 +55,7 @@ fn minimax_inner(
     let eval = eligible_moves
         .iter()
         .map(|move_|
-            minimax_inner(&board_state.do_move(*move_), transposition_table, depth - 1, !own_turn)
+            minimax_inner(&board_state.do_move(*move_), transposition_table, depth + 1, !own_turn)
         )
         .reduce(|best_move, move_| {
             if own_turn { // Assume that the enemy plays optimally.

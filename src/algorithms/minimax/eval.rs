@@ -47,6 +47,9 @@ pub fn dbg_print_eval_breakdown(board_state: &BoardState, move_: Move, index: us
 }
 
 fn format_eval(eval: Eval) -> String {
+    if eval == EVAL_WON || eval == EVAL_LOST {
+        return format!(" {:+>5}", eval);
+    }
     format!("{:+>6.3}", eval)
 }
 
@@ -147,7 +150,7 @@ mod eval_terms {
         let subboards_won  = subboard_pattern.spots(board_state.turn().to_piece());
         let subboards_lost = subboard_pattern.spots(board_state.turn().opposite().to_piece());
 
-        places_eval(subboards_won) - places_eval(subboards_lost) * SUBBOARDS_WON_PLACES_FACTOR
+        (places_eval(subboards_won) - places_eval(subboards_lost)) * SUBBOARDS_WON_PLACES_FACTOR
     }
 
     pub fn eval_piece_places(board_state: &BoardState) -> Eval {
