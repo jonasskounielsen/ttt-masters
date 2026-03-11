@@ -131,7 +131,7 @@ impl Pattern {
     }
 }
 
-impl<'a> Move<'a> {
+impl Move {
     pub fn dbg_to_string(&self) -> String {
         format!("Subboard: {:?}, square: {:?}", self.subboard(), self.square())
     }
@@ -208,12 +208,12 @@ impl RawPiece {
     }
 }
 
-impl<'a> dbg_MoveList<'a> for Box<[Move<'a>]> {}
+impl dbg_MoveList<'_> for Box<[Move]> {}
 
 #[allow(non_camel_case_types)]
 pub trait dbg_MoveList<'a>
 where
-    &'a Self: IntoIterator<Item = &'a Move<'a>>,
+    &'a Self: IntoIterator<Item = &'a Move>,
     Self: 'a,
 {
     fn dbg_print(&'a self) {

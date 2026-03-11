@@ -171,16 +171,14 @@ impl Subboard {
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Move<'a> {
+pub struct Move {
     spot: Spot,
-    context: PhantomData<&'a BoardState>,
 }
 
-impl<'a> Move<'a> {
+impl Move {
     pub fn new(spot: Spot) -> Self {
         Self {
             spot,
-            context: PhantomData,
         }
     }
 

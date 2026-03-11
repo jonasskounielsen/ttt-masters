@@ -1,11 +1,11 @@
-use crate::{algorithms::minimax::{eval::{EVAL_LOST, EVAL_WON, Eval, dbg_print_eval_breakdown, eval}, transposition_table::TranspositionTable}, utils::{Move, board_state::BoardState, pattern::PatternState}};
+use crate::{algorithms::minimax::{eval::{EVAL_LOST, EVAL_WON, Eval, dbg_print_eval_breakdown, eval}, transposition_table::{TranspositionTable, TranspositionTableResponse}}, utils::{Move, board_state::BoardState, pattern::PatternState}};
 
 mod eval;
 mod transposition_table;
 
 const SEARCH_DEPTH_PLIES: u32 = 3;
 
-pub fn minimax(board_state: &BoardState) -> Move<'_> {
+pub fn minimax(board_state: &BoardState) -> Move {
     let mut transposition_table = TranspositionTable::new();
 
     minimax_inner(
@@ -14,26 +14,16 @@ pub fn minimax(board_state: &BoardState) -> Move<'_> {
         EVAL_LOST - 1.0, EVAL_WON + 1.0,
     );
 
-    let eligible_moves = board_state.eligible_moves();
-
-    *eligible_moves
-        .iter()
-        .filter_map(|move_| {
-            let eval = transposition_table.get(&board_state.do_move(*move_), 1);
-            eval.map(|eval| (eval, move_))
-        })
-        .reduce(|best_move, move_| {
-            if best_move.0 > move_.0 {
-                best_move
-            } else {
-                move_
-            }
-        })
-        .expect("no eligible move")
-        .1
+    dbg!(transposition_table.get(board_state, 0));
+    let TranspositionTableResponse::PresentLowDepth {
+        best_move: Some(move_), ..
+    } = transposition_table.get(board_state, 0) else {
+        panic!("no eligible move");
+    };
+    move_
 }
 
-fn minimax_inner(
+fn minimax_inner (
     board_state:         &BoardState,
     transposition_table: &mut TranspositionTable,
     depth:               u32,
@@ -41,7 +31,7 @@ fn minimax_inner(
     mut alpha:           Eval,
     mut beta:            Eval,
 ) -> Eval {
-    if let Some(eval) = transposition_table.get(board_state, depth) {
+    if let TranspositionTableResponse::PresentLowDepth { eval, .. } = transposition_table.get(board_state, depth) {
         return eval;
     }
 
@@ -51,7 +41,7 @@ fn minimax_inner(
         } else {
             -eval(board_state)
         };
-        transposition_table.set(board_state, depth, eval);
+        transposition_table.set(board_state, depth, eval, None);
         return eval;
     }
     
@@ -65,6 +55,7 @@ fn minimax_inner(
     } else {
         EVAL_WON
     };
+    let mut best_move = eligible_moves[0]; // Will always be overwritten.
     for move_ in eligible_moves {
         let eval = minimax_inner(
             &board_state.do_move(move_), transposition_table,
@@ -72,13 +63,19 @@ fn minimax_inner(
             alpha, beta,
         );
         if own_turn {
-            best_eval = best_eval.max(eval);
+            if eval > best_eval {
+                best_eval = eval;
+                best_move = move_;
+            }
             if best_eval >= beta { // Beta cutoff.
                 return best_eval;
             }
             alpha = alpha.max(best_eval);
         } else {
-            best_eval = best_eval.min(eval);
+            if eval < best_eval {
+                best_eval = eval;
+                best_move = move_;
+            }
             if best_eval <= alpha { // Alpha cutoff.
                 return best_eval;
             }
@@ -86,8 +83,8 @@ fn minimax_inner(
         }
     }
 
-    dbg!(depth);
-    transposition_table.set(board_state, depth, best_eval);
+    dbg!(best_move);
+    transposition_table.set(board_state, depth, best_eval, Some(best_move));
     best_eval
 }
 

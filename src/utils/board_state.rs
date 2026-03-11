@@ -114,7 +114,7 @@ impl BoardState {
         }
     }
 
-    pub fn eligible_moves(&self) -> Box<[Move<'_>]> {
+    pub fn eligible_moves(&self) -> Box<[Move]> {
         self
             .enumerate()
             .flat_map(|(subboard_place, subboard)| {

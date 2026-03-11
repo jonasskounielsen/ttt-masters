@@ -3,17 +3,17 @@ use rustbot::{algorithms::minimax::{dbg_print_moves, minimax}, utils::board_stat
 fn main() {
     let board_state = BoardState::dbg_from_matrix(
         [
-            "     .  O  .     ",
-            "     .    X.     ",
-            "O O O.  X X.O O O",
+            "     .     .     ",
+            "     .     .     ",
+            "     .     .     ",
 
-            "     .X X X.     ",
-            "X O X.     .O   X",
-            "X   X.     .O O X",
+            "     .     .     ",
+            "     .     .     ",
+            "     .     .     ",
             
-            "X   X.     .X   O",
-            "X   O.     .O   O",
-            "  O O.X X X.O    ",
+            "     .     .     ",
+            "     .     .     ",
+            "     .     .     ",
         ], 3, "dot",
     );
 

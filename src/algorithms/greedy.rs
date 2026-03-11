@@ -13,7 +13,7 @@ use crate::utils::{Centeredness, Move, Place, board_state::BoardState};
 // * The center of a pattern.
 // * The corner of a pattern.
 // * The edge of a pattern.
-pub fn greedy(board_state: &BoardState) -> Move<'_> {
+pub fn greedy(board_state: &BoardState) -> Move {
     let eligible_moves = board_state.eligible_moves();
 
     let first_winning_move = eligible_moves.iter().find(|move_| {
@@ -53,7 +53,7 @@ pub fn greedy(board_state: &BoardState) -> Move<'_> {
     panic!("no eligible moves");
 }
 
-fn best_subboard_winning_move<'a>(board_state: &'a BoardState, eligible_moves: &[Move<'a>]) -> Option<Move<'a>> {
+fn best_subboard_winning_move(board_state: &BoardState, eligible_moves: &[Move]) -> Option<Move> {
     let mut subboard_winning_moves: Vec<_> = eligible_moves
         .iter()
         .filter(|move_| {
@@ -71,7 +71,7 @@ fn best_subboard_winning_move<'a>(board_state: &'a BoardState, eligible_moves: &
     subboard_winning_moves.first().map(|move_| **move_)
 }
 
-fn best_subboard_blocking_move<'a>(board_state: &'a BoardState, eligible_moves: &[Move<'a>]) -> Option<Move<'a>> {
+fn best_subboard_blocking_move(board_state: &BoardState, eligible_moves: &[Move]) -> Option<Move> {
     let mut subboard_winning_moves: Vec<_> = eligible_moves
         .iter()
         .filter(|move_| { let Some(pattern) = board_state.pattern_if_active(move_.subboard()) else { panic!("move points to inactive subboard"); };
@@ -86,7 +86,7 @@ fn best_subboard_blocking_move<'a>(board_state: &'a BoardState, eligible_moves: 
     subboard_winning_moves.first().map(|move_| **move_)
 }
 
-fn best_centermost_square_move<'a>(eligible_moves: &[Move<'a>]) -> Option<Move<'a>> {
+fn best_centermost_square_move(eligible_moves: &[Move]) -> Option<Move> {
     let mut moves: Vec<_> = eligible_moves.into();
 
     moves.sort_by(|move1, move2| {
