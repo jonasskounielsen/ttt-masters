@@ -37,13 +37,13 @@ impl TranspositionTable {
 
     pub fn get(&self, board_state: &BoardState, depth: u32) -> TranspositionTableResponse {
         if let Some(entry) = self.table.get(board_state) {
-            if entry.depth <= depth || entry.is_terminal {
-                TranspositionTableResponse::PresentLowDepth {
+            if entry.depth >= depth || entry.is_terminal {
+                TranspositionTableResponse::PresentHighDepth {
                     eval: entry.eval,
                     best_move: entry.best_move,
                 }
             } else {
-                TranspositionTableResponse::PresentHighDepth {
+                TranspositionTableResponse::PresentLowDepth {
                     eval: entry.eval,
                     best_move: entry.best_move,
                 }

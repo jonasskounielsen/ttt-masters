@@ -8,16 +8,18 @@ const SEARCH_DEPTH_PLIES: u32 = 3;
 pub fn minimax(board_state: &BoardState) -> Move {
     let mut transposition_table = TranspositionTable::new();
 
-    minimax_inner(
-        board_state, &mut transposition_table,
-        0, true,
-        EVAL_LOST - 1.0, EVAL_WON + 1.0,
-    );
+    for i in 1..SEARCH_DEPTH_PLIES {
+        minimax_inner(
+            board_state, &mut transposition_table,
+            i, true,
+            EVAL_LOST - 1.0, EVAL_WON + 1.0,
+        );
+    }
 
     dbg!(transposition_table.get(board_state, 0));
     let TranspositionTableResponse::PresentLowDepth {
         best_move: Some(move_), ..
-    } = transposition_table.get(board_state, 0) else {
+    } = transposition_table.get(board_state, SEARCH_DEPTH_PLIES) else {
         panic!("no eligible move");
     };
     move_
@@ -31,11 +33,15 @@ fn minimax_inner (
     mut alpha:           Eval,
     mut beta:            Eval,
 ) -> Eval {
-    if let TranspositionTableResponse::PresentLowDepth { eval, .. } = transposition_table.get(board_state, depth) {
+    let transposition_table_response = transposition_table.get(board_state, depth);
+    if transposition_table_response != TranspositionTableResponse::NotPresent {
+        dbg!(transposition_table_response);
+    }
+    if let TranspositionTableResponse::PresentLowDepth { eval, .. } = transposition_table_response {
         return eval;
     }
 
-    if depth == SEARCH_DEPTH_PLIES || matches!(board_state.state(), PatternState::Won(_)) {
+    if depth == 0 || matches!(board_state.state(), PatternState::Won(_)) {
         let eval = if own_turn {
              eval(board_state)
         } else {
@@ -50,16 +56,29 @@ fn minimax_inner (
         panic!("no eligible move");
     }
 
+    let mut sorted_moves = Vec::new();
+    if let TranspositionTableResponse::PresentHighDepth { eval: _eval, best_move: Some(best_move) } = transposition_table_response {
+        dbg!(best_move);
+        sorted_moves.push(best_move);
+        for move_ in &eligible_moves {
+            if *move_ == best_move {
+                continue;
+            }
+            sorted_moves.push(*move_);
+        }
+    }
+    sorted_moves.extend_from_slice(&eligible_moves);
+
     let mut best_eval = if own_turn {
         EVAL_LOST
     } else {
         EVAL_WON
     };
-    let mut best_move = eligible_moves[0]; // Will always be overwritten.
-    for move_ in eligible_moves {
+    let mut best_move = sorted_moves[0]; // Will always be overwritten.
+    for move_ in sorted_moves {
         let eval = minimax_inner(
             &board_state.do_move(move_), transposition_table,
-            depth + 1, !own_turn,
+            depth - 1, !own_turn,
             alpha, beta,
         );
         if own_turn {
@@ -83,7 +102,6 @@ fn minimax_inner (
         }
     }
 
-    dbg!(best_move);
     transposition_table.set(board_state, depth, best_eval, Some(best_move));
     best_eval
 }
