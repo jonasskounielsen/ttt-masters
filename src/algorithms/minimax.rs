@@ -1,28 +1,78 @@
+use std::{sync::mpsc, thread, time::{Duration, Instant}};
+
 use crate::{algorithms::minimax::{eval::{EVAL_LOST, EVAL_WON, Eval, dbg_print_eval_breakdown, eval}, transposition_table::{TranspositionTable, TranspositionTableResponse}}, utils::{Move, board_state::BoardState, pattern::PatternState}};
 
 mod eval;
 mod transposition_table;
 
-const SEARCH_DEPTH_PLIES: u32 = 3;
+const MAX_DEPTH_PLIES: u32 = 99;
+const MAX_SEARCH_TIME_MILLIS: u64 = 1_000;
+
+enum Message {
+    BestYetMove(Move),
+    SearchTerminatedMove(Move),
+    TimeUp,
+}
 
 pub fn minimax(board_state: &BoardState) -> Move {
     let mut transposition_table = TranspositionTable::new();
 
-    for i in 1..SEARCH_DEPTH_PLIES {
-        minimax_inner(
-            board_state, &mut transposition_table,
-            i, true,
-            EVAL_LOST - 1.0, EVAL_WON + 1.0,
-        );
-    }
+    let (tx, rx) = mpsc::channel();
 
-    dbg!(transposition_table.get(board_state, 0));
-    let TranspositionTableResponse::PresentLowDepth {
-        best_move: Some(move_), ..
-    } = transposition_table.get(board_state, SEARCH_DEPTH_PLIES) else {
-        panic!("no eligible move");
-    };
-    move_
+    let tx_minimax = tx.clone();
+    let board_state = *board_state;
+    let test = Instant::now();
+    thread::spawn(move || {
+        let mut depth = 1;
+        loop {
+            minimax_inner(
+                &board_state, &mut transposition_table,
+                depth, true,
+                EVAL_LOST - 1.0, EVAL_WON + 1.0,
+            );
+            let TranspositionTableResponse::PresentHighDepth {
+                best_move: Some(move_), ..
+            } = transposition_table.get(&board_state, 0) else {
+                panic!("no eligible move");
+            };
+            dbg!(depth);
+            dbg!(test.elapsed());
+            if depth == MAX_DEPTH_PLIES {
+                tx_minimax.send(Message::SearchTerminatedMove(move_)).expect("failed to send max depth move message to main thread");
+                break;
+            }
+            tx_minimax.send(Message::BestYetMove(move_)).expect("failed to send best yet move message to main thread");
+            depth += 1;
+        }
+    });
+
+    let tx_time = tx.clone();
+    let start_instant = Instant::now();
+    thread::spawn(move || {
+        loop {
+            thread::sleep(Duration::from_millis(10));
+            let elapsed = start_instant.elapsed();
+            if elapsed > Duration::from_millis(MAX_SEARCH_TIME_MILLIS) {
+                tx_time.send(Message::TimeUp).expect("failed to send time up message to main thread");
+            }
+        }
+    });
+
+    let mut best_move_yet = None;
+    for message in rx.iter() {
+        match message {
+            Message::BestYetMove(move_) => {
+                best_move_yet = Some(move_);
+            },
+            Message::SearchTerminatedMove(move_) => {
+                return move_;
+            },
+            Message::TimeUp => {
+                return best_move_yet.expect("depth 1 search ran out of time");
+            },
+        }
+    }
+    unreachable!();
 }
 
 fn minimax_inner (
@@ -34,10 +84,8 @@ fn minimax_inner (
     mut beta:            Eval,
 ) -> Eval {
     let transposition_table_response = transposition_table.get(board_state, depth);
-    if transposition_table_response != TranspositionTableResponse::NotPresent {
-        dbg!(transposition_table_response);
-    }
-    if let TranspositionTableResponse::PresentLowDepth { eval, .. } = transposition_table_response {
+    
+    if let TranspositionTableResponse::PresentHighDepth { eval, .. } = transposition_table_response {
         return eval;
     }
 
@@ -57,8 +105,9 @@ fn minimax_inner (
     }
 
     let mut sorted_moves = Vec::new();
-    if let TranspositionTableResponse::PresentHighDepth { eval: _eval, best_move: Some(best_move) } = transposition_table_response {
-        dbg!(best_move);
+    if let TranspositionTableResponse::PresentLowDepth {
+        eval: _eval, best_move: Some(best_move)
+    } = transposition_table_response {
         sorted_moves.push(best_move);
         for move_ in &eligible_moves {
             if *move_ == best_move {

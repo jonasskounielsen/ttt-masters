@@ -54,8 +54,9 @@ impl TranspositionTable {
     }
 
     pub fn set(&mut self, board_state: &BoardState, depth: u32, eval: Eval, best_move: Option<Move>) {
-        if self.get(board_state, depth) != TranspositionTableResponse::NotPresent {
-            panic!("attempt to overwrite transposition table entry");
+        if let Some(TranspositionEntry { depth: entry_depth, .. }) = self.table.get(board_state) &&
+            *entry_depth >= depth {
+            return;
         }
         let entry = TranspositionEntry {
             eval,
