@@ -1,9 +1,10 @@
 use std::{sync::mpsc, thread, time::{Duration, Instant}};
 
-use crate::{algorithms::minimax::{eval::{EVAL_LOST, EVAL_WON, Eval, dbg_print_eval_breakdown, eval}, transposition_table::{TranspositionTable, TranspositionTableResponse}}, utils::{Move, board_state::BoardState, pattern::PatternState}};
+use crate::{algorithms::minimax::{eval::{EVAL_LOST, EVAL_WON, Eval, eval}, transposition_table::{TranspositionTable, TranspositionTableResponse}}, utils::{Move, board_state::BoardState, pattern::PatternState}};
 
 mod eval;
 mod transposition_table;
+pub mod debug;
 
 const MAX_DEPTH_PLIES: u32 = 99;
 const MAX_SEARCH_TIME_MILLIS: u64 = 1_000;
@@ -21,7 +22,6 @@ pub fn minimax(board_state: &BoardState) -> Move {
 
     let tx_minimax = tx.clone();
     let board_state = *board_state;
-    let test = Instant::now();
     thread::spawn(move || {
         let mut depth = 1;
         loop {
@@ -31,14 +31,15 @@ pub fn minimax(board_state: &BoardState) -> Move {
                 EVAL_LOST - 1.0, EVAL_WON + 1.0,
             );
             let TranspositionTableResponse::PresentHighDepth {
-                best_move: Some(move_), ..
+                best_move: Some(move_),
+                eval,
             } = transposition_table.get(&board_state, 0) else {
                 panic!("no eligible move");
             };
-            dbg!(depth);
-            dbg!(test.elapsed());
-            if depth == MAX_DEPTH_PLIES {
-                tx_minimax.send(Message::SearchTerminatedMove(move_)).expect("failed to send max depth move message to main thread");
+            if depth == MAX_DEPTH_PLIES ||
+               eval == EVAL_WON ||
+               eval == EVAL_LOST {
+                tx_minimax.send(Message::SearchTerminatedMove(move_)).expect("failed to send search terminated move message to main thread");
                 break;
             }
             tx_minimax.send(Message::BestYetMove(move_)).expect("failed to send best yet move message to main thread");
@@ -153,18 +154,4 @@ fn minimax_inner (
 
     transposition_table.set(board_state, depth, best_eval, Some(best_move));
     best_eval
-}
-
-#[allow(unused)]
-pub fn dbg_print_moves(board_state: &BoardState) {
-    eprintln!("{:<51}  gmalw |  sbw  | sbwpl | sbalw | sbdaw | pcpl  | apcpl", "");
-
-    let eligible_moves = board_state.eligible_moves();
-
-    eligible_moves
-        .iter()
-        .enumerate()
-        .for_each(|(index, move_)| {
-            dbg_print_eval_breakdown(&board_state.do_move(*move_), *move_, index);
-        });
 }

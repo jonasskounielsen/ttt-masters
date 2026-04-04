@@ -1,7 +1,3 @@
-use std::marker::PhantomData;
-
-use board_state::BoardState;
-
 use self::pattern::{Pattern, PatternState};
 
 use crate::utils::raw::{RawPlace, RawTurn};

@@ -1,4 +1,4 @@
-use crate::utils::{Move, board_state::BoardState, pattern::PatternState};
+use crate::utils::{board_state::BoardState, pattern::PatternState};
 
 pub type Eval = f32;
 
@@ -29,31 +29,7 @@ pub fn eval(board_state: &BoardState) -> Eval {
     eval
 }
 
-pub fn dbg_print_eval_breakdown(board_state: &BoardState, move_: Move, index: usize) {
-    // Negate eval to present from other player's perspective.
-    eprintln!(
-        "{:>2}: eval: {}, {} ({}, {}, {}, {}, {}, {}, {})",
-        index,
-        format_eval(-eval(board_state)),
-        move_.dbg_to_string(),
-        format_eval(-eval_terms::eval_game_almost_won       (board_state)),
-        format_eval(-eval_terms::eval_subboards_won         (board_state)),
-        format_eval(-eval_terms::eval_subboards_won_places  (board_state)),
-        format_eval(-eval_terms::subboards_almost_won       (board_state)),
-        format_eval(-eval_terms::subboards_doubly_almost_won(board_state)),
-        format_eval(-eval_terms::eval_piece_places          (board_state)),
-        format_eval(-eval_terms::eval_active_subboard_pieces(board_state)),
-    );
-}
-
-fn format_eval(eval: Eval) -> String {
-    if eval == EVAL_WON || eval == EVAL_LOST {
-        return format!(" {:+>5}", eval);
-    }
-    format!("{:+>6.3}", eval)
-}
-
-mod eval_terms {
+pub(super) mod eval_terms {
     use crate::{algorithms::minimax::eval::Eval, utils::{Centeredness, Place, board_state::BoardState}};
 
     const GAME_ALMOST_WON_FACTOR:        f32 = 1.0;
