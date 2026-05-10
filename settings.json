@@ -1,0 +1,8 @@
+{
+  "timeout": 3,
+  "starting_pieces": 0,
+  "seed": -1, 
+  "dot_path": "AI/hand/",
+  "cross_path": "AI/bot/",
+  "starting": "cross"
+}

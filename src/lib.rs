@@ -1,11 +1,11 @@
 use utils::{board_state::BoardState, RawBoardState, RawMove};
 
 pub mod utils;
-
 pub mod algorithms {
     pub mod greedy;
     pub mod minimax;
 }
+pub mod client;
 
 #[unsafe(no_mangle)]
 extern "C" fn get_move(raw_board_state: RawBoardState) -> RawMove {

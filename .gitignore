@@ -1,7 +1,5 @@
-/.vscode
 /CROSS
 /DOT
-/"AI's"/
-/AI's/
+/AI/
 rustbot.so
 /target

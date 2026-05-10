@@ -141,6 +141,14 @@ pub enum Subboard {
 }
 
 impl Subboard {
+    pub fn new_empty() -> Self {
+        Subboard::Active(Pattern::new([
+            Piece::Empty, Piece::Empty, Piece::Empty,
+            Piece::Empty, Piece::Empty, Piece::Empty,
+            Piece::Empty, Piece::Empty, Piece::Empty,
+        ]))
+    }
+
     pub fn from_pattern(pattern: Pattern, active: bool) -> Self {
         match pattern.state() {
             PatternState::Won(player) => Subboard::Won(player),
@@ -250,6 +258,16 @@ mod tests {
 
     mod subboard {
         use crate::utils::{pattern::Pattern, Player, Subboard};
+
+        #[test]
+        fn new_empty() {
+            let expected = Subboard::Active(Pattern::dbg_from_matrix([
+                "     ",
+                "     ",
+                "     ",
+            ]));
+            assert_eq!(Subboard::new_empty(), expected);
+        }
 
         #[test]
         fn from_pattern_pattern_if_active() {

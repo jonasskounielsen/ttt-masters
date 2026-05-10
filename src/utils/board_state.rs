@@ -11,6 +11,14 @@ pub struct BoardState {
 }
 
 impl BoardState {
+    pub fn new_empty(turn: Player) -> Self {
+        let board = [Subboard::new_empty(); 9];
+        BoardState {
+            board,
+            turn,
+        }
+    }
+
     pub fn from_raw(raw_board_state: RawBoardState) -> Self {
         let board = std::array::from_fn(|subboard_index| {
             let pattern = Pattern::from_raw(raw_board_state.board[subboard_index]);
@@ -239,6 +247,15 @@ mod tests {
     }
 
     #[test]
+    fn new_empty() {
+        BoardState::new_empty(Player::Cross)
+            .enumerate()
+            .for_each(|(_, subboard)| {
+                assert_eq!(*subboard, Subboard::new_empty());
+            });
+    }
+
+    #[test]
     fn from_raw_turn_subboard() {
         let winners = [
             None,
@@ -273,10 +290,7 @@ mod tests {
                     }
                 },
                 Subboard::Inactive(pattern) => {
-                    for j in 0..9 {
-                        let piece = pattern.piece(Place::from_index(j));
-                        let test_pattern = Pattern::dbg_from_matrix(TEST_BOARD[i]);
-                        assert_eq!(piece, test_pattern.piece(Place::from_index(j)));
+                    for j in 0..9 { let piece = pattern.piece(Place::from_index(j)); let test_pattern = Pattern::dbg_from_matrix(TEST_BOARD[i]); assert_eq!(piece, test_pattern.piece(Place::from_index(j)));
                     }
                 },
                 Subboard::Won(player) => {
